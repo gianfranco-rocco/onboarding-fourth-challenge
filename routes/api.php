@@ -21,5 +21,6 @@ Route::controller(CityController::class)
         Route::post('/', 'store')->name('store');
         Route::get('/{city}', 'show')->name('show');
         Route::put('/{city}', 'update')->name('update');
+        Route::delete('/{city}', 'destroy')->name('destroy');
     }
 );
