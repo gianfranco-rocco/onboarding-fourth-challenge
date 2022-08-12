@@ -21,6 +21,8 @@ class CityObserver
         $city->incomingFlights()->delete();
         $city->outgoingFlights()->delete();
 
+        $city->airlines()->detach();
+
         $city->clearCachedKeys();
     }
 
