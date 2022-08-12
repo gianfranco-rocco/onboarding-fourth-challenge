@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
+use App\Http\Resources\ShowCityResource;
 use App\Models\City;
 use App\Services\AirlineService;
 use App\Services\CityService;
@@ -39,9 +40,9 @@ class CityController extends Controller
         ], 201);
     }
 
-    public function edit(City $city)
+    public function show(City $city): ShowCityResource
     {
-        //
+        return ShowCityResource::make($city);
     }
 
     public function update(UpdateCityRequest $request, City $city)

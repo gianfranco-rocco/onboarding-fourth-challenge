@@ -19,5 +19,6 @@ Route::controller(CityController::class)
     ->name('city.')
     ->group(function () {
         Route::post('/', 'store')->name('store');
+        Route::get('/{city}', 'show')->name('show');
     }
 );
