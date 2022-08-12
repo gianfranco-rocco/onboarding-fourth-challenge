@@ -41,12 +41,16 @@ class City extends Model
         }
     }
 
-    public static function clearCachedKeys(): void
+    public function clearCachedKeys(): void
     {
         $cachedKeys = self::getCachedKeys();
 
-        foreach($cachedKeys as $key) {
-            Cache::forget($key);
+        if (count($cachedKeys)) {
+            foreach($cachedKeys as $key) {
+                Cache::forget($key);
+            }
+    
+            Cache::forget(self::CACHED_KEYS_KEY);
         }
     }
 
