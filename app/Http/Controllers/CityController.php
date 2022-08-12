@@ -45,9 +45,13 @@ class CityController extends Controller
         return ShowCityResource::make($city);
     }
 
-    public function update(UpdateCityRequest $request, City $city)
+    public function update(UpdateCityRequest $request, City $city): JsonResponse
     {
-        //
+        $city->update($request->validated());
+
+        return response()->json([
+            'message' => 'City updated successfully.'
+        ]);
     }
 
     public function destroy(City $city)
