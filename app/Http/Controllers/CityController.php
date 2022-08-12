@@ -10,6 +10,7 @@ use App\Services\AirlineService;
 use App\Services\CityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\View\View;
 
 class CityController extends Controller
@@ -37,7 +38,7 @@ class CityController extends Controller
 
         return response()->json([
             'message' => 'City successfully created.'
-        ], 201);
+        ], Response::HTTP_CREATED);
     }
 
     public function show(City $city): ShowCityResource
