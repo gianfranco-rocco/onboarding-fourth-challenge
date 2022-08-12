@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCityRequest;
 use App\Models\City;
 use App\Services\AirlineService;
 use App\Services\CityService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -29,9 +30,13 @@ class CityController extends Controller
         ]);
     }
 
-    public function store(StoreCityRequest $request)
+    public function store(StoreCityRequest $request): JsonResponse
     {
-        //
+        City::create($request->validated());
+
+        return response()->json([
+            'message' => 'City successfully created.'
+        ], 201);
     }
 
     public function edit(City $city)
