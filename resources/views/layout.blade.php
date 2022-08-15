@@ -72,6 +72,8 @@
         @yield('body')
     </main>
 
+    <script src="https://unpkg.com/flowbite@1.5.2/dist/flowbite.js"></script>
+
     @yield('scripts')
 </body>
 </html>

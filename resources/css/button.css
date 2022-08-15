@@ -1,3 +1,7 @@
 .button:hover {
     background-color: var(--main-purple);
 }
+
+.purple-button {
+    background-color: var(--main-purple);
+}
