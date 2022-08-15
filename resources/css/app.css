@@ -10,7 +10,7 @@ html {
     font-size: 17px;
 }
 
-h1 {
+.page-title {
     font-size: 2rem;
     color: var(--main-purple);
 }

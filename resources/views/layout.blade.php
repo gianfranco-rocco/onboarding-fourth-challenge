@@ -67,7 +67,7 @@
     </header>
 
     <main class="px-6 sm:px-10 py-4">
-        <h1 class="mb-4">@yield('title')</h1>
+        <h1 class="mb-4 page-title">@yield('title')</h1>
 
         @yield('body')
     </main>
