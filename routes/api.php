@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(CityController::class)
     ->prefix('cities')
-    ->name('city.')
+    ->name('cities.')
     ->group(function () {
         Route::post('/', 'store')->name('store');
         Route::get('/{city}', 'show')->name('show');
