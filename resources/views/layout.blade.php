@@ -15,6 +15,7 @@
     @vite('resources/css/app.css')
     @vite('resources/css/header.css')    
     @yield('styles')
+    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.2/dist/flowbite.min.css" />
 </head>
 <body>
     <header class="flex flex-col sm:flex-row sm:justify-between px-6 sm:px-10 py-4 header-nav drop-shadow-sm">
