@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\CityController;
-use App\Http\Controllers\CityController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,10 +18,4 @@ Route::get('/', function () {
     return view('flight.index');
 })->name('home');
 
-Route::controller(CityController::class)
-    ->prefix('cities')
-    ->name('city.')
-    ->group(function () {
-        Route::get('/', 'index')->name('index');
-    }
-);
+Route::get('/cities', [CityController::class, 'index'])->name('cities.index');
