@@ -27,7 +27,7 @@ class CityController extends Controller
     public function index(Request $request): View
     {
         return view('city.index', [
-            'cities' => $this->cityService->getCursorPaginated($request->get('cursor', '')),
+            'cities' => $this->cityService->getCursorPaginated($request->get('cursor', ''), 10),
             'airlines' => $this->airlineService->get()
         ]);
     }

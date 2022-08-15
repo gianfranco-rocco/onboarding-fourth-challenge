@@ -14,7 +14,7 @@ class CityService
         return Cache::rememberForever('cities', fn () => City::all());
     }
 
-    public function getCursorPaginated(string $cursor = ''): CursorPaginator
+    public function getCursorPaginated(string $cursor = '', int $total = 15): CursorPaginator
     {
         $cacheKey = "cities_cursorPaginate_$cursor";
 
@@ -23,6 +23,6 @@ class CityService
         return Cache::rememberForever($cacheKey, fn () => City::withCount([
             'incomingFlights',
             'outgoingFlights'
-        ])->cursorPaginate());
-    } 
+        ])->cursorPaginate($total));
+    }
 }
