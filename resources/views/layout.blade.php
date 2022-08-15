@@ -13,7 +13,7 @@
         @endif
     </title>
     @vite('resources/css/app.css')
-    @vite('resources/css/header.css')    
+    @vite('resources/css/header.css')
     @yield('styles')
     <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.2/dist/flowbite.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -75,6 +75,47 @@
     </main>
 
     <script src="https://unpkg.com/flowbite@1.5.2/dist/flowbite.js"></script>
+
+    <script type="module">
+        const displayErrorsFromResponse = (response) => {
+            for (const [key, errors] of Object.entries(response.responseJSON.errors)) {
+                enableErrorClasses(key);
+                errors.forEach(error => appendErrorMessage(key, error));
+            }
+        }
+
+        const enableErrorClasses = (inputId) => {
+            $(`#${inputId}`).addClass('bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400');
+            $(`#${inputId}-label`).addClass('text-red-700 dark:text-red-500');
+        }
+
+        const disableErrorClasses = (formId) => {
+            const formElements = document.getElementById(formId).elements;
+
+            Array.from(formElements).forEach(({name}) => {
+                $(`#${name}`).removeClass('bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400');
+                $(`#${name}-label`).removeClass('text-red-700 dark:text-red-500');
+            });
+        }
+
+        const appendErrorMessage = (inputId, message) => {
+            $(`#${inputId}-container`).append(`<p class="mt-2 text-sm text-red-600 dark:text-red-500 error-message">${message}</p>`);
+        }
+
+        const removeErrorMessages = () => {
+            $(".error-message").remove();
+        }
+
+        const clearErrorsFromForm = (formId) => {
+            removeErrorMessages();
+            disableErrorClasses(formId);
+        }
+
+        window.displayErrorsFromResponse = displayErrorsFromResponse;
+        window.removeErrorMessages = removeErrorMessages;
+        window.disableErrorClasses = disableErrorClasses;
+        window.clearErrorsFromForm = clearErrorsFromForm;
+    </script>
 
     @yield('scripts')
 </body>

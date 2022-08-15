@@ -23,6 +23,6 @@ class CityService
         return Cache::rememberForever($cacheKey, fn () => City::withCount([
             'incomingFlights',
             'outgoingFlights'
-        ])->cursorPaginate($total));
+        ])->orderBy('id', 'desc')->cursorPaginate($total));
     }
 }

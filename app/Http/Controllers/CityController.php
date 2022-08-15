@@ -11,6 +11,7 @@ use App\Services\CityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Pagination\CursorPaginator;
 use Illuminate\View\View;
 
 class CityController extends Controller
@@ -24,10 +25,16 @@ class CityController extends Controller
         $this->airlineService = $airlineService;
     }
 
-    public function index(Request $request): View
+    public function index(Request $request): View|CursorPaginator
     {
+        $cities = $this->cityService->getCursorPaginated($request->get('cursor', ''), 10);
+
+        if ($request->wantsJson()) {
+            return $cities;
+        }
+
         return view('city.index', [
-            'cities' => $this->cityService->getCursorPaginated($request->get('cursor', ''), 10),
+            'cities' => $cities,
             'airlines' => $this->airlineService->get()
         ]);
     }
