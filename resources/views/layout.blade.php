@@ -12,6 +12,7 @@
             - @yield('title')
         @endif
     </title>
+    @livewireStyles
     @vite('resources/css/app.css')
     @vite('resources/css/header.css')
     @vite('resources/css/button.css')
@@ -74,6 +75,8 @@
 
         @yield('body')
     </main>
+
+    @livewireScripts
 
     <script src="https://unpkg.com/flowbite@1.5.2/dist/flowbite.js"></script>
 
