@@ -26,6 +26,24 @@
     >
         <form id="newCityForm">
             <x-form-input-container
+                formId="newCityForm"
+                name="name"
+                label="Name"
+                placeholder="Montevideo"
+            />
+        </form>
+    </x-modal>
+
+    <x-modal 
+        id="editCityModal"
+        title="Edit city"
+        submitBtnLabel="Update" 
+        submitBtnOnclick="updateCity(editCityModal.id)"
+        closeBtnOnclick="clearForm(editCityForm.id)"
+    >
+        <form id="editCityForm">
+            <x-form-input-container
+                formId="editCityForm"
                 name="name"
                 label="Name"
                 placeholder="Montevideo"
@@ -37,24 +55,33 @@
 @section('scripts')
     <script>
         $(document).ready(function () {
-            loadCitiesIntoTable('citiesTable', @json($cities));
+            loadCitiesIntoTable(@json($cities));
         });
 
         const saveCity = (modalId) => {
             const formId = 'newCityForm';
 
-            ajaxRequest('{{ route("cities.store") }}', formId, 'POST', function (response) {
-                clearForm(formId);
+            ajaxRequest(
+                '{{ route("cities.store") }}',
+                $(`#${formId}`).serialize(),
+                'POST',
+                function () {
+                    clearErrorsFromForm(formId);
+                },
+                function (response) {
+                    clearForm(formId);
 
-                ajaxRequest('{{ route("cities.index") }}', null, 'GET', function (response) {
-                    loadCitiesIntoTable('citiesTable', response);
-                });
+                    getAndLoadCities();
 
-                $(`#${modalId}CloseBtn`).click();
-            });
+                    toggleModal(modalId);
+                },
+                function (response) {
+                    displayFormErrorsFromResponse(response, formId);
+                }
+            );
         }
 
-        const loadCitiesIntoTable = (tableId, response) => {
+        const loadCitiesIntoTable = (response) => {
             const tbody = response.data.map(city => {
                 return `
                     <tr>
@@ -63,29 +90,68 @@
                         <td>${ city.count_incoming_fligths ?? 0 }</td>
                         <td>${ city.count_outgoing_flights ?? 0 }</td>
                         <td>
-                            <button
-                                id=""
-                                type="button"
-                                onclick=""
-                                class='button border rounded-full px-5 py-2 hover:text-white bg-white'
-                            >
-                                Edit
-                            </button>
-                            <button
-                                id=""
-                                type="button"
-                                onclick=""
-                                class='button border rounded-full px-5 py-2 hover:text-white bg-white'
-                            >
-                                Delete
-                            </button>
+                            <x-button onclick="editCity(${ city.id })">Edit</x-button>
+                            <x-button>Delete</x-button>
                         </td>
                     </tr>
                 `;
             });
 
             $("a[rel='next']").attr('href', response.next_page_url);
-            $(`#${tableId}Tbody`).empty().append(tbody);
+            $(`#citiesTableTbody`).empty().append(tbody);
+        }
+
+        const editCity = (cityId) => {
+            const formId = 'editCityForm';
+
+            const url = '{{ route("cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
+
+            ajaxRequest(
+                url, 
+                null, 
+                'GET',
+                null,
+                function (response) {
+                    const modalId = 'editCityModal';
+
+                    setInputValue(`${formId}-name`, response.data.name);
+
+                    $(`#${modalId}SubmitBtn`).attr('onclick', `updateCity('${modalId}', ${cityId})`);
+                    
+                    toggleModal(modalId);
+                }
+            );
+        }
+
+        const updateCity = (modalId, cityId) => {
+            const formId = 'editCityForm';
+
+            const url = '{{ route("cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+
+            ajaxRequest(
+                url,
+                $(`#${formId}`).serialize(),
+                'PUT',
+                function () {
+                    clearErrorsFromForm(formId);
+                },
+                function (response) {
+                    clearForm(formId);
+
+                    getAndLoadCities();
+                    
+                    toggleModal(modalId);
+                },
+                function (response) {
+                    displayFormErrorsFromResponse(response, formId);
+                }
+            );
+        }
+
+        const getAndLoadCities = () => {
+            ajaxRequest('{{ route("cities.index") }}', null, 'GET', null, function (response) {
+                loadCitiesIntoTable(response);
+            });
         }
 
         const clearForm = (formId) => {
@@ -93,23 +159,18 @@
             clearErrorsFromForm(formId);
         }
 
-        const ajaxRequest = (url, formId, method, success) => {
+        const ajaxRequest = (url, data, method, beforeSend = null, success = null, error = null) => {
             $.ajax(url, {
-                data: formId ? $(`#${formId}`).serialize() : null,    
+                data,
                 dataType: 'json',
                 headers: {
                     Accept: 'application/json'
                 },
                 method,
-                beforeSend: function () {
-                    if (formId) {
-                        clearErrorsFromForm(formId);
-                    }
-                },
+                beforeSend,
                 success,
-                error: function (response) {
-                    displayErrorsFromResponse(response);
-                }
+                error,
+                complete: (response) => { return response }
             });
         }
     </script>

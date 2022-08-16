@@ -78,24 +78,29 @@
     <script src="https://unpkg.com/flowbite@1.5.2/dist/flowbite.js"></script>
 
     <script type="module">
-        const displayErrorsFromResponse = (response) => {
+        const inputErrorClasses = 'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400';
+        const labelErrorClasses = 'text-red-700 dark:text-red-500';
+
+        const displayFormErrorsFromResponse = (response, formId) => {
             for (const [key, errors] of Object.entries(response.responseJSON.errors)) {
-                enableErrorClasses(key);
-                errors.forEach(error => appendErrorMessage(key, error));
+                const inputId = `${formId}-${key}`;
+
+                enableErrorClasses(inputId);
+                errors.forEach(error => appendErrorMessage(inputId, error));
             }
         }
 
         const enableErrorClasses = (inputId) => {
-            $(`#${inputId}`).addClass('bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400');
-            $(`#${inputId}-label`).addClass('text-red-700 dark:text-red-500');
+            $(`#${inputId}`).addClass(inputErrorClasses);
+            $(`#${inputId}-label`).addClass(labelErrorClasses);
         }
 
-        const disableErrorClasses = (formId) => {
+        const disableErrorsFromForm = (formId) => {
             const formElements = document.getElementById(formId).elements;
 
-            Array.from(formElements).forEach(({name}) => {
-                $(`#${name}`).removeClass('bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400');
-                $(`#${name}-label`).removeClass('text-red-700 dark:text-red-500');
+            Array.from(formElements).forEach(({id: inputId}) => {
+                $(`#${inputId}`).removeClass(inputErrorClasses);
+                $(`#${inputId}-label`).removeClass(labelErrorClasses);
             });
         }
 
@@ -109,13 +114,25 @@
 
         const clearErrorsFromForm = (formId) => {
             removeErrorMessages();
-            disableErrorClasses(formId);
+            disableErrorsFromForm(formId);
         }
 
-        window.displayErrorsFromResponse = displayErrorsFromResponse;
-        window.removeErrorMessages = removeErrorMessages;
-        window.disableErrorClasses = disableErrorClasses;
-        window.clearErrorsFromForm = clearErrorsFromForm;
+        const toggleModal = (modalId) => {
+            $(`#${modalId}ToggleBtn`).click();
+        }
+
+        const setInputValue = (inputId, value) => {
+            $(`#${inputId}`).val(value);
+        }
+
+        Object.assign(window, {
+            displayFormErrorsFromResponse,
+            removeErrorMessages,
+            disableErrorsFromForm,
+            clearErrorsFromForm,
+            toggleModal,
+            setInputValue
+        });
     </script>
 
     @yield('scripts')

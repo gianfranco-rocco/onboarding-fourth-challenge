@@ -1,8 +1,8 @@
-<div id="{{ $name }}-container">
-    <label for="{{ $name }}" id="{{ $name }}-label" class="block mb-2 text-sm font-medium">{{ $label }}</label>
+<div id="{{ $inputId }}-container">
+    <label for="{{ $inputId }}" id="{{ $inputId }}-label" class="block mb-2 text-sm font-medium">{{ $label }}</label>
     <input 
+        id="{{ $inputId }}" 
         type="{{ $inputType }}" 
-        id="{{ $name }}" 
         name="{{ $name }}" 
         class="border text-sm rounded-lg block w-full p-2.5 dark:bg-red-100" 
         placeholder="{{ $placeholder }}"
