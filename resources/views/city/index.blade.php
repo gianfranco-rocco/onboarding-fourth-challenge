@@ -163,15 +163,14 @@
                 },
                 error: function (response) {
                     const UNPROCESSABLE_CONTENT = 422;
+                    const message = response.responseJSON.message;
 
                     if (response.status === UNPROCESSABLE_CONTENT) {
                         $(`#${modalId}Title`).text("Delete city confirmation");
-                        $(`#${modalId}Message`).html(response.responseJSON.message);
+                        $(`#${modalId}Message`).html(message);
                         $(`#${modalId}SubmitBtn`).attr('onclick', `deleteCity(${cityId}, true)`).text("Confirm");
                     } else {
-                        //TODO: display error in alert
-                        toggleModal(modalId);
-                        resetDeleteCityModal();
+                        Toast.danger(message);
                     }
                 }
             });
