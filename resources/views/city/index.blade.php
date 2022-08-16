@@ -141,8 +141,8 @@
                     <tr>
                         <td>${ city.id }</td>
                         <td>${ city.name }</td>
-                        <td>${ city.count_incoming_fligths ?? 0 }</td>
-                        <td>${ city.count_outgoing_flights ?? 0 }</td>
+                        <td>${ city.incoming_flights_count }</td>
+                        <td>${ city.outgoing_flights_count }</td>
                         <td>
                             <x-button onclick="editCity(${ city.id })">Edit</x-button>
                             <x-button>Delete</x-button>
