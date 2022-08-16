@@ -13,6 +13,7 @@
         @endif
     </title>
     @livewireStyles
+    @toastScripts
     @vite('resources/css/app.css')
     @vite('resources/css/header.css')
     @vite('resources/css/button.css')
