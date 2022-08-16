@@ -69,95 +69,99 @@
         const saveCity = (modalId) => {
             const formId = 'newCityForm';
 
-            ajaxRequest(
-                '{{ route("cities.store") }}',
-                $(`#${formId}`).serialize(),
-                'POST',
-                function () {
+            $.ajax('{{ route("cities.store") }}', {
+                data: $(`#${formId}`).serialize(),
+                dataType: 'json',
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'POST',
+                beforeSend: function () {
                     clearErrorsFromForm(formId);
                 },
-                function (response) {
+                success: function (response) {
                     clearForm(formId);
 
                     getAndLoadCities();
 
                     toggleModal(modalId);
                 },
-                function (response) {
+                error: function (response) {
                     displayFormErrorsFromResponse(response, formId);
-                }
-            );
+                },
+            });
         }
 
 
         const editCity = (cityId) => {
-            const formId = 'editCityForm';
-
             const url = '{{ route("cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
 
-            ajaxRequest(
-                url, 
-                null, 
-                'GET',
-                null,
-                function (response) {
+            $.ajax(url, {
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'GET',
+                success: function (response) {
                     const modalId = 'editCityModal';
 
-                    setInputValue(`${formId}-name`, response.data.name);
+                    setInputValue(`editCityForm-name`, response.data.name);
 
                     $(`#${modalId}SubmitBtn`).attr('onclick', `updateCity('${modalId}', ${cityId})`);
                     
                     toggleModal(modalId);
-                }
-            );
+                },
+            });
         }
 
         const updateCity = (modalId, cityId) => {
-            const formId = 'editCityForm';
-
             const url = '{{ route("cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
-            ajaxRequest(
-                url,
-                $(`#${formId}`).serialize(),
-                'PUT',
-                function () {
+            const formId = 'editCityForm';
+
+            $.ajax(url, {
+                data: $(`#${formId}`).serialize(),
+                dataType: 'json',
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'PUT',
+                beforeSend: function () {
                     clearErrorsFromForm(formId);
                 },
-                function (response) {
+                success: function (response) {
                     clearForm(formId);
 
                     getAndLoadCities();
                     
                     toggleModal(modalId);
                 },
-                function (response) {
+                error: function (response) {
                     displayFormErrorsFromResponse(response, formId);
                 }
-            );
+            });
         }
 
         const deleteCity = (cityId, confirm = false) => {
             const url = '{{ route("cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
-            const data = {
-                confirmation: confirm
-            };
-
             const modalId = 'deleteCityModal';
 
-            ajaxRequest(
-                url,
-                data,
-                'DELETE',
-                null,
-                function (response) {
+            $.ajax(url, {
+                data: {
+                    confirmation: confirm
+                },
+                dataType: 'json',
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'DELETE',
+                success: function (response) {
                     getAndLoadCities();
                     
                     toggleModal(modalId);
                     resetDeleteCityModal();
                 },
-                function (response) {
+                error: function (response) {
                     const UNPROCESSABLE_CONTENT = 422;
 
                     if (response.status === UNPROCESSABLE_CONTENT) {
@@ -170,7 +174,7 @@
                         resetDeleteCityModal();
                     }
                 }
-            );
+            });
         }
 
         const resetDeleteCityModal = () => {
@@ -192,8 +196,17 @@
         const getAndLoadCities = () => {
             const url = '{{ route("cities.index", ["cursor" => request()->get("cursor")]) }}';
 
-            ajaxRequest(url, null, 'GET', null, function (response) {
-                loadCitiesIntoTable(response);
+            $.ajax(url, {
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'GET',
+                success: function (response) {
+                    loadCitiesIntoTable(response);
+                },
+                error: function (response) {
+                    //TODO display error in alert
+                },
             });
         }
 
@@ -220,21 +233,6 @@
         const clearForm = (formId) => {
             document.getElementById(formId).reset();
             clearErrorsFromForm(formId);
-        }
-
-        const ajaxRequest = (url, data, method, beforeSend = null, success = null, error = null) => {
-            $.ajax(url, {
-                data,
-                dataType: 'json',
-                headers: {
-                    Accept: 'application/json'
-                },
-                method,
-                beforeSend,
-                success,
-                error,
-                complete: (response) => { return response }
-            });
         }
     </script>
 @endsection
