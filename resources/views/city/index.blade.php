@@ -62,6 +62,8 @@
 
 @section('scripts')
     <script>
+        const HTTP_UNPROCESSABLE_CONTENT = 422;
+
         $(document).ready(function () {
             loadCitiesIntoTable(@json($cities));
         });
@@ -89,7 +91,11 @@
                     Toast.success(response.message);
                 },
                 error: function (response) {
-                    displayFormErrorsFromResponse(response, formId);
+                    if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
+                        displayFormErrorsFromResponse(response, formId);
+                    } else {
+                        Toast.danger(response.responseJSON.message);
+                    }
                 },
             });
         }
@@ -165,10 +171,9 @@
                     Toast.success(response.message);
                 },
                 error: function (response) {
-                    const UNPROCESSABLE_CONTENT = 422;
                     const message = response.responseJSON.message;
 
-                    if (response.status === UNPROCESSABLE_CONTENT) {
+                    if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
                         $(`#${modalId}Title`).text("Delete city confirmation");
                         $(`#${modalId}Message`).html(message);
                         $(`#${modalId}SubmitBtn`).attr('onclick', `deleteCity(${cityId}, true)`).text("Confirm");
