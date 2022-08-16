@@ -157,7 +157,7 @@
                     toggleModal(modalId);
                     resetDeleteCityModal();
                 },
-                function (response, test) {
+                function (response) {
                     const UNPROCESSABLE_CONTENT = 422;
 
                     if (response.status === UNPROCESSABLE_CONTENT) {
