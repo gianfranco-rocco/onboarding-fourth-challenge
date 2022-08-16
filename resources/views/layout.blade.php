@@ -122,7 +122,7 @@
         }
 
         const setInputValue = (inputId, value) => {
-            $(`#${inputId}`).val(value);
+            $(`#${inputId}`).attr('value', value);
         }
 
         Object.assign(window, {
