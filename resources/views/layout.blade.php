@@ -14,9 +14,11 @@
     </title>
     @livewireStyles
     @toastScripts
-    @vite('resources/css/app.css')
-    @vite('resources/css/header.css')
-    @vite('resources/css/button.css')
+    @vite([
+        'resources/css/app.css',
+        'resources/css/header.css',
+        'resources/css/button.css',
+    ])
     @yield('styles')
     <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.2/dist/flowbite.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
