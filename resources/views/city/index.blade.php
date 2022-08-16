@@ -149,7 +149,11 @@
                     Toast.success(response.message);
                 },
                 error: function (response) {
-                    displayFormErrorsFromResponse(response, formId);
+                    if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
+                        displayFormErrorsFromResponse(response, formId);
+                    } else {
+                        Toast.danger(response.responseJSON.message);
+                    }
                 }
             });
         }
