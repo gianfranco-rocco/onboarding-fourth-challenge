@@ -81,25 +81,6 @@
             );
         }
 
-        const loadCitiesIntoTable = (response) => {
-            const tbody = response.data.map(city => {
-                return `
-                    <tr>
-                        <td>${ city.id }</td>
-                        <td>${ city.name }</td>
-                        <td>${ city.count_incoming_fligths ?? 0 }</td>
-                        <td>${ city.count_outgoing_flights ?? 0 }</td>
-                        <td>
-                            <x-button onclick="editCity(${ city.id })">Edit</x-button>
-                            <x-button>Delete</x-button>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            $("a[rel='next']").attr('href', response.next_page_url);
-            $(`#citiesTableTbody`).empty().append(tbody);
-        }
 
         const editCity = (cityId) => {
             const formId = 'editCityForm';
@@ -152,6 +133,26 @@
             ajaxRequest('{{ route("cities.index") }}', null, 'GET', null, function (response) {
                 loadCitiesIntoTable(response);
             });
+        }
+
+        const loadCitiesIntoTable = (response) => {
+            const tbody = response.data.map(city => {
+                return `
+                    <tr>
+                        <td>${ city.id }</td>
+                        <td>${ city.name }</td>
+                        <td>${ city.count_incoming_fligths ?? 0 }</td>
+                        <td>${ city.count_outgoing_flights ?? 0 }</td>
+                        <td>
+                            <x-button onclick="editCity(${ city.id })">Edit</x-button>
+                            <x-button>Delete</x-button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            $("a[rel='next']").attr('href', response.next_page_url);
+            $(`#citiesTableTbody`).empty().append(tbody);
         }
 
         const clearForm = (formId) => {
