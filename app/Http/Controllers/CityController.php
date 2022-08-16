@@ -45,7 +45,7 @@ class CityController extends Controller
         City::create($request->validated());
 
         return response()->json([
-            'message' => 'City successfully created.'
+            'message' => 'City created successfully.'
         ], Response::HTTP_CREATED);
     }
 
