@@ -118,6 +118,9 @@
                     
                     toggleModal(modalId);
                 },
+                error: function (response) {
+                    Toast.danger(response.responseJSON.message);
+                }
             });
         }
 
