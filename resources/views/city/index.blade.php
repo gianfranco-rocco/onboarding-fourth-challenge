@@ -157,9 +157,10 @@
                 method: 'DELETE',
                 success: function (response) {
                     getAndLoadCities();
-                    
                     toggleModal(modalId);
                     resetDeleteCityModal();
+
+                    Toast.success(response.message);
                 },
                 error: function (response) {
                     const UNPROCESSABLE_CONTENT = 422;
