@@ -6,7 +6,7 @@ table th, table td   {
 }
 
 .table th {
-    background-color: var(--main-purple);
+    background-color: var(--main-color);
     opacity: .8;
     color: #fff;
 }

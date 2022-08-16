@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-    --main-purple: rgba(119,61,189,1);
+    --main-color: rgba(119,61,189,1);
 }
 
 html {
@@ -12,5 +12,5 @@ html {
 
 .page-title {
     font-size: 2rem;
-    color: var(--main-purple);
+    color: var(--main-color);
 }

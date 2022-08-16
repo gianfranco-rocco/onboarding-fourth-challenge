@@ -1,9 +1,9 @@
 .button:hover {
-    background-color: var(--main-purple);
+    background-color: var(--main-color);
 }
 
 .purple-button {
-    background-color: var(--main-purple) !important;
+    background-color: var(--main-color) !important;
 }
 
 .purple-button:hover {
