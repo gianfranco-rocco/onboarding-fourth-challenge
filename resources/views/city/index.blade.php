@@ -5,7 +5,18 @@
 @endsection
 
 @section('body')
-    <x-button data-modal-toggle="newCityModal" class="mb-4">New city</x-button>
+    <div class="flex justify-between">
+        <x-button data-modal-toggle="newCityModal" class="mb-4">New city</x-button>
+    
+        <div>
+            <x-dropdown id="sortBy" label="Sort by">
+                <x-dropdown-item dropdownId="sortBy" id="id-asc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'asc'])" label="ID (ascending)" />
+                <x-dropdown-item dropdownId="sortBy" id="id-desc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'desc'])" label="ID (descending)" />
+                <x-dropdown-item dropdownId="sortBy" id="name-asc" :href="route('cities.index', ['sort' => 'name', 'sort_dir' => 'asc'])" label="Name (ascending)" />
+                <x-dropdown-item dropdownId="sortBy" id="name-desc" :href="route('cities.index', ['sort' => 'name', 'sort_dir' => 'desc'])" label="Name (descending)" />
+            </x-dropdown>
+        </div>
+    </div>
 
     <x-table id="citiesTable" :records="$cities">
         <x-slot:heading>

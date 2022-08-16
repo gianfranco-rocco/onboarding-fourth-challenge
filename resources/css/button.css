@@ -3,5 +3,9 @@
 }
 
 .purple-button {
-    background-color: var(--main-purple);
+    background-color: var(--main-purple) !important;
+}
+
+.purple-button:hover {
+    opacity: .8;
 }

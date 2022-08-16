@@ -14,15 +14,11 @@ class CityService
         return Cache::rememberForever('cities', fn () => City::all());
     }
 
-    public function getCursorPaginated(string $cursor = '', int $total = 15): CursorPaginator
+    public function getCursorPaginated(int $total = 15): CursorPaginator
     {
-        $cacheKey = "cities_cursorPaginate_$cursor";
-
-        City::addCacheKeyToCachedKeys($cacheKey);
-
-        return Cache::rememberForever($cacheKey, fn () => City::withCount([
+        return City::withCount([
             'incomingFlights',
             'outgoingFlights'
-        ])->orderBy('id', 'desc')->cursorPaginate($total));
+        ])->orderBy(request()->get('sort', 'id'), request()->get('sort_dir', 'desc'))->cursorPaginate($total)->withQueryString();
     }
 }
