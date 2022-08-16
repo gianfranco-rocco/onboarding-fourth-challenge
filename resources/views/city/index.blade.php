@@ -85,6 +85,8 @@
                     getAndLoadCities(false);
 
                     toggleModal(modalId);
+
+                    Toast.success(response.message);
                 },
                 error: function (response) {
                     displayFormErrorsFromResponse(response, formId);
