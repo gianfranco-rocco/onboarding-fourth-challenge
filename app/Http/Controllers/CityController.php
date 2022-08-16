@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DestroyCityRequest;
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\ShowCityResource;
@@ -62,7 +63,11 @@ class CityController extends Controller
         ]);
     }
 
-    public function destroy(City $city): JsonResponse
+    /**
+     * 'DestroyCityRequest' is used for checking if deletion confirmation
+     * is to be required
+     */
+    public function destroy(DestroyCityRequest $request, City $city): JsonResponse
     {
         $city->delete();
 

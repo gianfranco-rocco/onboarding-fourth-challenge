@@ -50,6 +50,14 @@
             />
         </form>
     </x-modal>
+
+    <x-modal 
+        id="deleteCityModal"
+        title="Delete city"
+        submitBtnLabel="Delete"
+    >
+        <p id="deleteCityModalMessage"></p>
+    </x-modal>
 @endsection
 
 @section('scripts')
@@ -129,8 +137,62 @@
             );
         }
 
+        const deleteCity = (cityId, confirm = false) => {
+            const url = '{{ route("cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+
+            const data = {
+                confirmation: confirm
+            };
+
+            const modalId = 'deleteCityModal';
+
+            ajaxRequest(
+                url,
+                data,
+                'DELETE',
+                null,
+                function (response) {
+                    getAndLoadCities();
+                    
+                    toggleModal(modalId);
+                    resetDeleteCityModal();
+                },
+                function (response, test) {
+                    const UNPROCESSABLE_CONTENT = 422;
+
+                    if (response.status === UNPROCESSABLE_CONTENT) {
+                        $(`#${modalId}Title`).text("Delete city confirmation");
+                        $(`#${modalId}Message`).html(response.responseJSON.message);
+                        $(`#${modalId}SubmitBtn`).attr('onclick', `deleteCity(${cityId}, true)`).text("Confirm");
+                    } else {
+                        //TODO: display error in alert
+                        toggleModal(modalId);
+                        resetDeleteCityModal();
+                    }
+                }
+            );
+        }
+
+        const resetDeleteCityModal = () => {
+            const modalId = 'deleteCityModal';
+
+            $(`#${modalId}Title`).text("Delete city");
+            $(`#${modalId}SubmitBtn`).text("Delete");
+        }
+
+        const openDeleteCityModal = (cityId, cityName) => {
+            const modalId = 'deleteCityModal';
+
+            $(`#${modalId}Message`).text(`Are you sure you want to delete '${cityName}' city?`);
+            $(`#${modalId}SubmitBtn`).attr('onclick', `deleteCity(${cityId})`);
+
+            toggleModal(modalId);
+        }
+
         const getAndLoadCities = () => {
-            ajaxRequest('{{ route("cities.index") }}', null, 'GET', null, function (response) {
+            const url = '{{ route("cities.index", ["cursor" => request()->get("cursor")]) }}';
+
+            ajaxRequest(url, null, 'GET', null, function (response) {
                 loadCitiesIntoTable(response);
             });
         }
@@ -145,7 +207,7 @@
                         <td>${ city.outgoing_flights_count }</td>
                         <td>
                             <x-button onclick="editCity(${ city.id })">Edit</x-button>
-                            <x-button>Delete</x-button>
+                            <x-button onclick="openDeleteCityModal(${ city.id }, '${city.name}')">Delete</x-button>
                         </td>
                     </tr>
                 `;
