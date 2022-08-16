@@ -7,8 +7,18 @@
 @section('body')
     <div class="flex justify-between">
         <x-button data-modal-toggle="newCityModal" class="mb-4">New city</x-button>
-    
+
         <div>
+            <x-dropdown id="airline" name="airline" class="hover:text-white dark:hover:bg-purple-700 mr-4" onchange="getCitiesByAirline(this)">
+                <option value="">Airline</option>
+
+                @forelse($airlines as $airline)
+                    <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                @empty
+                    <option value="" disabled>No airlines available</option>
+                @endforelse
+            </x-dropdown>
+
             <x-sorting-dropdown id="sortBy" label="Sort by">
                 <x-sorting-dropdown-item dropdownId="sortBy" id="id-asc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'asc'])" label="ID (ascending)" />
                 <x-sorting-dropdown-item dropdownId="sortBy" id="id-desc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'desc'])" label="ID (descending)" />
@@ -201,6 +211,27 @@
                         Toast.danger(message);
                     }
                 }
+            });
+        }
+
+        const getCitiesByAirline = (event) => {
+            const airlineId = event.value;
+
+            const url = airlineId
+                        ? '{{ route("cities.getByAirline", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId)
+                        : '{{ route("cities.index") }}';
+
+            $.ajax(url, {
+                headers: {
+                    Accept: 'application/json'
+                },
+                method: 'GET',
+                success: function (response) {
+                    loadCitiesIntoTable(response);
+                },
+                error: function (response) {
+                    Toast.danger("An error occurred while getting cities.");
+                },
             });
         }
 

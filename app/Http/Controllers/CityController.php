@@ -6,6 +6,7 @@ use App\Http\Requests\DestroyCityRequest;
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\ShowCityResource;
+use App\Models\Airline;
 use App\Models\City;
 use App\Services\AirlineService;
 use App\Services\CityService;
@@ -74,5 +75,13 @@ class CityController extends Controller
         return response()->json([
             'message' => 'City deleted successfully.'
         ]);
+    }
+
+    public function getByAirline(Airline $airline): CursorPaginator
+    {
+        return $airline->cities()->withCount([
+            'incomingFlights',
+            'outgoingFlights'
+        ])->cursorPaginate();
     }
 }

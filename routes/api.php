@@ -18,6 +18,7 @@ Route::controller(CityController::class)
     ->prefix('cities')
     ->name('cities.')
     ->group(function () {
+        Route::get('/get-by-airline/{airline}', 'getByAirline')->name('getByAirline');
         Route::post('/', 'store')->name('store');
         Route::get('/{city}', 'show')->name('show');
         Route::put('/{city}', 'update')->name('update');
