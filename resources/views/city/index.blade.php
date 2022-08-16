@@ -223,7 +223,7 @@
                     loadCitiesIntoTable(response);
                 },
                 error: function (response) {
-                    //TODO display error in alert
+                    Toast.danger("An error occurred while refreshing records.");
                 },
             });
         }
