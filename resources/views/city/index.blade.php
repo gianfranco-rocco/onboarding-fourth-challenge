@@ -82,7 +82,7 @@
                 success: function (response) {
                     clearForm(formId);
 
-                    getAndLoadCities();
+                    getAndLoadCities(false);
 
                     toggleModal(modalId);
                 },
@@ -193,8 +193,10 @@
             toggleModal(modalId);
         }
 
-        const getAndLoadCities = () => {
-            const url = '{{ route("cities.index", ["cursor" => request()->get("cursor")]) }}';
+        const getAndLoadCities = (withCursor = true) => {
+            const url = withCursor 
+                        ? '{{ route("cities.index", ["cursor" => request()->get("cursor")]) }}'
+                        : '{{ route("cities.index") }}';
 
             $.ajax(url, {
                 headers: {
