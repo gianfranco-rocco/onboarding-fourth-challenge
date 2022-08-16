@@ -1,5 +1,3 @@
-@vite('resources/css/button.css')
-
 <button
     id="{{ $id }}"
     type="{{ $type }}"
