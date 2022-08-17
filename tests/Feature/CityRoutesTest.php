@@ -39,4 +39,84 @@ class CityRoutesTest extends TestCase
                 'airlines' => $this->airlineService->get()
             ]);
     }
+
+    public function test_index_route_returns_view_and_displays_records_sorted_by_id_asc(): void
+    {
+        $sort = 'id,asc';
+
+        $response = $this->get(route('cities.index', [
+            'sort' => $sort
+        ]));
+
+        $cities = $this->cityService->getCursorPaginated(total: 10, sort: $sort);
+
+        $response
+            ->assertSuccessful()
+            ->assertViewIs('city.index')
+            ->assertViewMissing('No cities available')
+            ->assertViewHasAll([
+                'cities' => $cities,
+                'airlines' => $this->airlineService->get()
+            ]);
+    }
+
+    public function test_index_route_returns_view_and_displays_records_sorted_by_id_desc(): void
+    {
+        $sort = 'id,desc';
+
+        $response = $this->get(route('cities.index', [
+            'sort' => $sort
+        ]));
+
+        $cities = $this->cityService->getCursorPaginated(total: 10, sort: $sort);
+
+        $response
+            ->assertSuccessful()
+            ->assertViewIs('city.index')
+            ->assertViewMissing('No cities available')
+            ->assertViewHasAll([
+                'cities' => $cities,
+                'airlines' => $this->airlineService->get()
+            ]);
+    }
+
+    public function test_index_route_returns_view_and_displays_records_sorted_by_name_asc(): void
+    {
+        $sort = 'name,asc';
+
+        $response = $this->get(route('cities.index', [
+            'sort' => $sort
+        ]));
+
+        $cities = $this->cityService->getCursorPaginated(total: 10, sort: $sort);
+
+        $response
+            ->assertSuccessful()
+            ->assertViewIs('city.index')
+            ->assertViewMissing('No cities available')
+            ->assertViewHasAll([
+                'cities' => $cities,
+                'airlines' => $this->airlineService->get()
+            ]);
+    }
+
+    public function test_index_route_returns_view_and_displays_records_sorted_by_name_desc(): void
+    {
+        $sort = 'name,desc';
+
+        $response = $this->get(route('cities.index', [
+            'sort' => $sort
+        ]));
+
+        $cities = $this->cityService->getCursorPaginated(total: 10, sort: $sort);
+
+        $response
+            ->assertSuccessful()
+            ->assertViewIs('city.index')
+            ->assertViewMissing('No cities available')
+            ->assertViewHasAll([
+                'cities' => $cities,
+                'airlines' => $this->airlineService->get()
+            ]);
+    }
 }
