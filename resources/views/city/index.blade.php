@@ -6,25 +6,35 @@
 
 @section('body')
     <div class="flex justify-between">
-        <x-button data-modal-toggle="newCityModal" class="mb-4">New city</x-button>
+        <div class="flex items-center">
+            <x-button data-modal-toggle="newCityModal" class="mb-4 hover:bg-blue-700">New city</x-button>
+        </div>
 
-        <div>
-            <x-dropdown id="airline" name="airline" class="hover:text-white dark:hover:bg-purple-700 mr-4" onchange="getCitiesByAirline(this)">
-                <option value="">Airline</option>
+        <div class="flex flex-col items-end">
+            <div class="mb-4">
+                <label for="airline" class="mr-3">Filter by airline</label>
 
-                @forelse($airlines as $airline)
-                    <option value="{{ $airline->id }}">{{ $airline->name }}</option>
-                @empty
-                    <option value="" disabled>No airlines available</option>
-                @endforelse
-            </x-dropdown>
+                <x-dropdown id="airline" name="airline" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="getCitiesByAirline(this)">
+                    <option value="" selected>None</option>
+    
+                    @forelse($airlines as $airline)
+                        <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                    @empty
+                        <option value="" disabled>No airlines available</option>
+                    @endforelse
+                </x-dropdown>
+            </div>
 
-            <x-sorting-dropdown id="sortBy" label="Sort by">
-                <x-sorting-dropdown-item dropdownId="sortBy" id="id-asc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'asc'])" label="ID (ascending)" />
-                <x-sorting-dropdown-item dropdownId="sortBy" id="id-desc" :href="route('cities.index', ['sort' => 'id', 'sort_dir' => 'desc'])" label="ID (descending)" />
-                <x-sorting-dropdown-item dropdownId="sortBy" id="name-asc" :href="route('cities.index', ['sort' => 'name', 'sort_dir' => 'asc'])" label="Name (ascending)" />
-                <x-sorting-dropdown-item dropdownId="sortBy" id="name-desc" :href="route('cities.index', ['sort' => 'name', 'sort_dir' => 'desc'])" label="Name (descending)" />
-            </x-sorting-dropdown>
+            <div class="mb-4">
+                <label for="sortBy" class="mr-3">Sort by</label>
+
+                <x-dropdown id="sortBy" name="sort-by" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="sortBy(this)">
+                    <option value="{{ route('cities.index', ['sort' => 'id', 'sort_dir' => 'asc']) }}">ID (ascending)</option>
+                    <option value="{{ route('cities.index', ['sort' => 'id', 'sort_dir' => 'desc']) }}" selected>ID (descending)</option>
+                    <option value="{{ route('cities.index', ['sort' => 'name', 'sort_dir' => 'asc']) }}">Name (ascending)</option>
+                    <option value="{{ route('cities.index', ['sort' => 'name', 'sort_dir' => 'desc']) }}">Name (descending)</option>
+                </x-dropdown>
+            </div>
         </div>
     </div>
 
@@ -87,6 +97,16 @@
 
         $(document).ready(function () {
             loadCitiesIntoTable(@json($cities));
+
+            const currUrl = window.location.href;
+
+            $('#sortBy option').each(function() {
+                if (this.value == currUrl) {
+                    $("#sortBy").val(currUrl);
+                }
+            });
+
+            console.log('currUrl', currUrl);
         });
 
         const saveCity = (modalId) => {
@@ -233,6 +253,10 @@
                     Toast.danger("An error occurred while getting cities.");
                 },
             });
+        }
+
+        const sortBy = (event) => {
+            window.location.replace(event.value);
         }
 
         const resetDeleteCityModal = () => {

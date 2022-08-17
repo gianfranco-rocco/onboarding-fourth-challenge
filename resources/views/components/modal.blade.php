@@ -18,7 +18,7 @@
             </div>
             <!-- Modal footer -->
             <div class="flex items-center p-6 space-x-2 rounded-b border-t border-gray-200 dark:border-gray-600">
-                <x-button id="{{ $id }}SubmitBtn" class="purple-button text-white hover:opacity-80" onclick="{{ $submitBtnOnclick }}">{{ $submitBtnLabel }}</x-button>
+                <x-button id="{{ $id }}SubmitBtn" class="bg-blue-700 text-white hover:opacity-80" onclick="{{ $submitBtnOnclick }}">{{ $submitBtnLabel }}</x-button>
                 <x-button data-modal-toggle="{{ $id }}" onclick="{{ $closeBtnOnclick }}">{{ $closeBtnLabel }}</x-button>
             </div>
         </div>
