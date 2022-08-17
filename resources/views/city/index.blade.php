@@ -55,7 +55,7 @@
         submitBtnOnclick="saveCity(newCityModal.id)"
         closeBtnOnclick="clearForm(newCityForm.id)"
     >
-        <form id="newCityForm">
+        <form id="newCityForm" onsubmit="saveCity(newCityModal.id)">
             <x-form-input-container
                 formId="newCityForm"
                 name="name"
@@ -69,7 +69,6 @@
         id="editCityModal"
         title="Edit city"
         submitBtnLabel="Update" 
-        submitBtnOnclick="updateCity(editCityModal.id)"
         closeBtnOnclick="clearForm(editCityForm.id)"
     >
         <form id="editCityForm">
@@ -94,6 +93,10 @@
 @section('scripts')
     <script>
         const HTTP_UNPROCESSABLE_CONTENT = 422;
+
+        $('form').on('submit', function (e) {
+            e.preventDefault();
+        });
 
         $(document).ready(function () {
             loadCitiesIntoTable(@json($cities));
@@ -143,10 +146,13 @@
                 method: 'GET',
                 success: function (response) {
                     const modalId = 'editCityModal';
+                    const formId = 'editCityForm';
+                    const onclick = `updateCity('${modalId}', ${cityId})`;
 
-                    setInputValue(`editCityForm-name`, response.data.name);
+                    setInputValue(`${formId}-name`, response.data.name);
 
-                    $(`#${modalId}SubmitBtn`).attr('onclick', `updateCity('${modalId}', ${cityId})`);
+                    $(`#${modalId}SubmitBtn`).attr('onclick', onclick);
+                    $(`#${formId}`).attr('onsubmit', onclick);
                     
                     toggleModal(modalId);
                 },
