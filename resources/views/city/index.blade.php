@@ -248,7 +248,13 @@
 
             const [newQueryStringKey, newQueryStringValue] = event.value.split("=");
 
-            queryParams[newQueryStringKey] = newQueryStringValue;
+            if (newQueryStringValue) {
+                queryParams[newQueryStringKey] = newQueryStringValue;
+            } else {
+                if (newQueryStringKey in queryParams) {
+                    delete queryParams[newQueryStringKey];
+                }
+            }
 
             const queryString = Object.keys(queryParams).map(key => key + '=' + queryParams[key]).join('&');
 
