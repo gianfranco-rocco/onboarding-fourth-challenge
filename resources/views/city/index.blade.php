@@ -14,11 +14,11 @@
             <div class="mb-4">
                 <label for="airline" class="mr-3">Filter by airline</label>
 
-                <x-dropdown id="airline" name="airline" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="getCitiesByAirline(this)">
-                    <option value="" selected>None</option>
+                <x-dropdown id="airline" name="airline" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="handleSortingAndFiltering(this)">
+                    <option value="airline=" selected>None</option>
     
                     @forelse($airlines as $airline)
-                        <option value="{{ $airline->id }}">{{ $airline->name }}</option>
+                        <option value="airline={{ $airline->id }}">{{ $airline->name }}</option>
                     @empty
                         <option value="" disabled>No airlines available</option>
                     @endforelse
@@ -28,11 +28,11 @@
             <div class="mb-4">
                 <label for="sortBy" class="mr-3">Sort by</label>
 
-                <x-dropdown id="sortBy" name="sort-by" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="sortBy(this)">
-                    <option value="{{ route('cities.index', ['sort' => 'id', 'sort_dir' => 'asc']) }}">ID (ascending)</option>
-                    <option value="{{ route('cities.index', ['sort' => 'id', 'sort_dir' => 'desc']) }}" selected>ID (descending)</option>
-                    <option value="{{ route('cities.index', ['sort' => 'name', 'sort_dir' => 'asc']) }}">Name (ascending)</option>
-                    <option value="{{ route('cities.index', ['sort' => 'name', 'sort_dir' => 'desc']) }}">Name (descending)</option>
+                <x-dropdown id="sortBy" name="sort-by" class="hover:text-white dark:hover:bg-blue-700 w-fit" onchange="handleSortingAndFiltering(this)">
+                    <option value="sort=id,asc">ID (ascending)</option>
+                    <option value="sort=id,desc" selected>ID (descending)</option>
+                    <option value="sort=name,asc">Name (ascending)</option>
+                    <option value="sort=name,desc">Name (descending)</option>
                 </x-dropdown>
             </div>
         </div>
@@ -98,15 +98,7 @@
         $(document).ready(function () {
             loadCitiesIntoTable(@json($cities));
 
-            const currUrl = window.location.href;
-
-            $('#sortBy option').each(function() {
-                if (this.value == currUrl) {
-                    $("#sortBy").val(currUrl);
-                }
-            });
-
-            console.log('currUrl', currUrl);
+            setFilterAndSortByDropdownValue();
         });
 
         const saveCity = (modalId) => {
@@ -140,7 +132,6 @@
                 },
             });
         }
-
 
         const editCity = (cityId) => {
             const url = '{{ route("cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
@@ -234,29 +225,28 @@
             });
         }
 
-        const getCitiesByAirline = (event) => {
-            const airlineId = event.value;
+        const handleSortingAndFiltering = (event) => {
+            let queryParams = [];
 
-            const url = airlineId
-                        ? '{{ route("cities.getByAirline", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId)
-                        : '{{ route("cities.index") }}';
+            const queryStrings = currentQueryStringArr();
 
-            $.ajax(url, {
-                headers: {
-                    Accept: 'application/json'
-                },
-                method: 'GET',
-                success: function (response) {
-                    loadCitiesIntoTable(response);
-                },
-                error: function (response) {
-                    Toast.danger("An error occurred while getting cities.");
-                },
-            });
-        }
+            if (queryStrings.length) {
+                queryParams = queryStrings.map(queryString => {
+                    const [key, value] = queryString.split("=");
 
-        const sortBy = (event) => {
-            window.location.replace(event.value);
+                    return [key, value];
+                });
+
+                queryParams = Object.fromEntries(queryParams);                
+            }
+
+            const [newQueryStringKey, newQueryStringValue] = event.value.split("=");
+
+            queryParams[newQueryStringKey] = newQueryStringValue;
+
+            const queryString = Object.keys(queryParams).map(key => key + '=' + queryParams[key]).join('&');
+
+            window.location.replace(`{{ route("cities.index") }}?${queryString}`);
         }
 
         const resetDeleteCityModal = () => {
@@ -292,6 +282,30 @@
                     Toast.danger("An error occurred while refreshing records.");
                 },
             });
+        }
+
+        const setFilterAndSortByDropdownValue = () => {
+            currentQueryStringArr().forEach(queryString => {
+                if (queryString) {
+                    const sortByElement = $(`#sortBy option[value='${queryString}']`);
+                    const airlineElement = $(`#airline option[value='${queryString}']`);
+
+                    if (sortByElement.length) {
+                        $("#sortBy").val(queryString);
+                    } else if (airlineElement.length) {
+                        $("#airline").val(queryString);
+                    }
+                }
+            });
+        }
+
+        const currentQueryStringArr = () => {
+            /**
+             * We do substring(1) to remove the '?' from the beginning of query params
+             */
+            const currSearch = window.location.search.substring(1);
+
+            return currSearch.split("&") || [];
         }
 
         const loadCitiesIntoTable = (response) => {

@@ -76,12 +76,4 @@ class CityController extends Controller
             'message' => 'City deleted successfully.'
         ]);
     }
-
-    public function getByAirline(Airline $airline): CursorPaginator
-    {
-        return $airline->cities()->withCount([
-            'incomingFlights',
-            'outgoingFlights'
-        ])->cursorPaginate();
-    }
 }

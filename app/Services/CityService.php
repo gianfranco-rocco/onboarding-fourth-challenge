@@ -16,9 +16,32 @@ class CityService
 
     public function getCursorPaginated(int $total = 15): CursorPaginator
     {
+        $airline = request()->get('airline', null);
+        $sort = request()->get('sort', null);
+            
+        $sortingColumn = 'id';
+        $sortingDirection = 'desc';
+
+        if ($sort) {
+            $explodedSort = explode(',', $sort);
+    
+            if (is_array($explodedSort)) {
+                $sortingColumn = $explodedSort[0] ?? 'id';
+                $sortingDirection = $explodedSort[1] ?? 'desc';
+            }
+        }
+
         return City::withCount([
             'incomingFlights',
             'outgoingFlights'
-        ])->orderBy(request()->get('sort', 'id'), request()->get('sort_dir', 'desc'))->cursorPaginate($total)->withQueryString();
+        ])
+        ->when($airline, function ($query) use ($airline) {
+            $query->whereHas('airlines', function ($query) use ($airline) {
+                $query->where('airline_id', $airline);
+            });
+        })
+        ->orderBy($sortingColumn, $sortingDirection)
+        ->cursorPaginate($total)
+        ->withQueryString();
     }
 }
