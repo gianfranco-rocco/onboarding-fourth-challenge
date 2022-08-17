@@ -311,7 +311,7 @@
              */
             const currSearch = window.location.search.substring(1);
 
-            return currSearch.split("&") || [];
+            return currSearch ? currSearch.split("&") : [];
         }
 
         const loadCitiesIntoTable = (response) => {
