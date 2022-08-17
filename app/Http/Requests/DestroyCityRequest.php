@@ -54,7 +54,7 @@ class DestroyCityRequest extends FormRequest
             }
 
             if ($airlinesAttached) {
-                $relatedRecords[] = "{<strong>$airlinesAttached} airline(s) attached</strong>";
+                $relatedRecords[] = "<strong>{$airlinesAttached} airline(s) attached</strong>";
             }
 
             $joinedRelatedRecords = Arr::join($relatedRecords, ', ', ' and ');
