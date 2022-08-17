@@ -49,7 +49,7 @@
                 </li>
                 <li>
                     <a 
-                        href="#" 
+                        href="{{ route('airlines.index') }}" 
                         @class([
                             "ml-8",
                             'header-active' => Route::is('airlines.index')

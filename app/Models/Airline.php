@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,6 +18,12 @@ class Airline extends Model
         'description'
     ];
 
+    public $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
     public function cities(): BelongsToMany
     {
         return $this->belongsToMany(City::class);
@@ -25,5 +32,12 @@ class Airline extends Model
     public function flights(): HasMany
     {
         return $this->hasMany(Flight::class);
+    }
+
+    public function activeFlights(): HasMany
+    {
+        return $this->flights()
+                ->whereDate('departure_at', '<=', now())
+                ->whereDate('arrival_at', '>=', now());
     }
 }
