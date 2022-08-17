@@ -321,7 +321,8 @@
         }
 
         const loadCitiesIntoTable = (response) => {
-            const tbody = response.data.map(city => {
+            const tbody = response.data.length
+            ? response.data.map(city => {
                 return `
                     <tr>
                         <td>${ city.id }</td>
@@ -334,7 +335,12 @@
                         </td>
                     </tr>
                 `;
-            });
+            })
+            : `
+                <tr>
+                    <td colspan=5 class="text-center">No cities available</td>
+                </tr>
+            `;
 
             $("a[rel='next']").attr('href', response.next_page_url);
             $(`#citiesTableTbody`).empty().append(tbody);
