@@ -44,22 +44,24 @@ class DestroyCityRequest extends FormRequest
             ];
 
             $relatedRecords = [];
+            $prefixAdded = false;
 
             if ($incomingFlightsCount) {
-                $relatedRecords[] = "<strong>{$incomingFlightsCount} incoming flight(s)</strong>";
+                $relatedRecords[] = "has <strong>{$incomingFlightsCount} incoming flight(s)</strong>";
+                $prefixAdded = true;
             }
 
             if ($outgoingFlightsCount) {
-                $relatedRecords[] = "<strong>{$outgoingFlightsCount} outgoing flight(s)</strong>";
+                $relatedRecords[] = ($prefixAdded ? '' : 'has ') . "<strong>{$outgoingFlightsCount} outgoing flight(s)</strong>";
             }
 
             if ($airlinesAttached) {
-                $relatedRecords[] = "<strong>{$airlinesAttached} airline(s) attached</strong>";
+                $relatedRecords[] = "is assigned to <strong>{$airlinesAttached} airline(s)</strong>";
             }
 
             $joinedRelatedRecords = Arr::join($relatedRecords, ', ', ' and ');
 
-            $message = "The city has {$joinedRelatedRecords}, this action will delete the city as well as the mentioned related record(s), confirm to delete";
+            $message = "The city {$joinedRelatedRecords}, this action will delete the city as well as the mentioned related record(s).";
 
             $this->messages = [
                 'confirmation.accepted' => $message
