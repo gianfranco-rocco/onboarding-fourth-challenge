@@ -63,6 +63,14 @@
                 label="Name"
                 placeholder="American Airlines"
             />
+
+            <x-form-input-container
+                formId="newAirlineForm"
+                name="description"
+                label="Description"
+                placeholder="Description"
+                class="mt-3"
+            />
         </form>
     </x-modal>
 
@@ -305,7 +313,7 @@
                 },
                 method: 'GET',
                 success: function (response) {
-                    loadAirlinesIntoTable(response);
+                    loadAirlinesIntoTable(response.airlines);
                 },
                 error: function (response) {
                     Toast.danger("An error occurred while refreshing records.");

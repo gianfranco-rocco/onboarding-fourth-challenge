@@ -13,6 +13,10 @@ class AirlineController extends Controller
 {
     public function store(StoreAirlineRequest $request): JsonResponse
     {
+        $airline = Airline::create($request->validated());
+
+        // $airline->cities()->attach($request->cities);
+
         return response()->json([
             'message' => 'Airline created successfully.'
         ]);

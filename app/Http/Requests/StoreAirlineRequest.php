@@ -14,7 +14,31 @@ class StoreAirlineRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => [
+                'required', 
+                'unique:airlines',
+                'string',
+                'max:75'
+            ],
+            'description' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+            // 'cities' => [
+            //     'required',
+            //     'array'
+            // ],
+            // 'cities.*' => [
+            //     'exists:cities,id'
+            // ]
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'cities.*.exists' => 'Invalid city.'
         ];
     }
 }
