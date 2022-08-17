@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Flight extends Model
@@ -17,4 +18,9 @@ class Flight extends Model
         'departure_city_id',
         'destination_city_id'
     ];
+
+    public function airline(): BelongsTo
+    {
+        return $this->belongsTo(Airline::class);
+    }
 }
