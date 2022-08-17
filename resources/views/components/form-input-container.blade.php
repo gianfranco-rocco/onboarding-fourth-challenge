@@ -1,11 +1,1 @@
-<div id="{{ $inputId }}-container" {{ $attributes->merge(['class' => '']) }}>
-    <label for="{{ $inputId }}" id="{{ $inputId }}-label" class="block mb-2 text-sm font-medium">{{ $label }}</label>
-    <x-input
-        id="{{ $inputId }}"
-        type="{{ $inputType }}"
-        name="{{ $name }}"
-        placeholder="{{ $placeholder }}"
-        value="{{ $value }}"
-        class="block w-full"
-    />
-</div>
+<div id="{{ $compoundId }}-container" {{ $attributes->merge(['class' => '']) }}> {{ $slot }} </div>

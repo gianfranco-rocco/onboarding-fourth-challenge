@@ -48,36 +48,52 @@
         </x-slot:heading>
     </x-table>
 
+    @php
+        $createFormId = 'newCityForm';
+    @endphp
+
     <x-modal 
         id="newCityModal"
         title="New city"
         submitBtnLabel="Save" 
         submitBtnOnclick="saveCity(newCityModal.id)"
-        closeBtnOnclick="clearForm(newCityForm.id)"
+        closeBtnOnclick="clearForm({{ $createFormId }}.id)"
     >
-        <form id="newCityForm" onsubmit="saveCity(newCityModal.id)">
-            <x-form-input-container
-                formId="newCityForm"
-                name="name"
-                label="Name"
-                placeholder="Montevideo"
-            />
+        <form id="{{ $createFormId }}" onsubmit="saveCity(newCityModal.id)">
+            <x-form-input-container :forForm="$createFormId" forInput="name">
+                <x-label :forForm="$createFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$createFormId"
+                    name="name"
+                    placeholder="Montevideo"
+                    class="block w-full"
+                />
+            </x-form-input-container>
         </form>
     </x-modal>
+
+    @php
+        $editFormId = 'editCityForm';
+    @endphp
 
     <x-modal 
         id="editCityModal"
         title="Edit city"
         submitBtnLabel="Update" 
-        closeBtnOnclick="clearForm(editCityForm.id)"
+        closeBtnOnclick="clearForm({{ $editFormId }}.id)"
     >
-        <form id="editCityForm">
-            <x-form-input-container
-                formId="editCityForm"
-                name="name"
-                label="Name"
-                placeholder="Montevideo"
-            />
+        <form id="{{ $editFormId }}">
+            <x-form-input-container :forForm="$editFormId" forInput="name">
+                <x-label :forForm="$editFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$editFormId"
+                    name="name"
+                    placeholder="Montevideo"
+                    class="block w-full"
+                />
+            </x-form-input-container>
         </form>
     </x-modal>
 

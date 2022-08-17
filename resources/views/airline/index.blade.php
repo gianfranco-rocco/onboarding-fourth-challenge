@@ -49,28 +49,51 @@
         </x-slot:heading>
     </x-table>
 
+    @php 
+        $createFormId = 'newAirlineForm';
+    @endphp
+
     <x-modal 
         id="newAirlineModal"
         title="New airline"
         submitBtnLabel="Save" 
         submitBtnOnclick="saveAirline(newAirlineModal.id)"
-        closeBtnOnclick="clearForm(newAirlineForm.id)"
+        closeBtnOnclick="clearForm({{ $createFormId }}.id)"
     >
-        <form id="newAirlineForm" onsubmit="saveAirline(newAirlineModal.id)">
-            <x-form-input-container
-                formId="newAirlineForm"
-                name="name"
-                label="Name"
-                placeholder="American Airlines"
-            />
+        <form id="{{ $createFormId }}" onsubmit="saveAirline(newAirlineModal.id)">
+            <x-form-input-container :forForm="$createFormId" forInput="name">
+                <x-label :forForm="$createFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$createFormId"
+                    name="name"
+                    placeholder="American Airlines"
+                    class="block w-full"
+                />
+            </x-form-input-container>
 
             <x-form-input-container
-                formId="newAirlineForm"
-                name="description"
-                label="Description"
-                placeholder="Description"
+                :forForm="$createFormId"
+                forInput="description"
                 class="mt-3"
-            />
+            >
+                <x-label :forForm="$createFormId" for="description">Description</x-label>
+
+                <x-input
+                    :forForm="$createFormId"
+                    name="description"
+                    placeholder="American Airlines was founded in 1978"
+                    class="block w-full"
+                />
+            </x-form-input-container>
+
+            <x-form-input-container
+                :forForm="$createFormId"
+                forInput="cities"
+                class="mt-3"
+            >
+                <x-label :forForm="$createFormId" for="cities">Cities</x-label>
+            </x-form-input-container>
         </form>
     </x-modal>
 
@@ -80,13 +103,36 @@
         submitBtnLabel="Update" 
         closeBtnOnclick="clearForm(editAirlineForm.id)"
     >
-        <form id="editAirlineForm">
+        @php
+            $editFormId = 'editAirlineForm';
+        @endphp
+
+        <form id="{{ $editFormId }}">
+            <x-form-input-container :forForm="$editFormId" forInput="name">
+                <x-label :forForm="$createFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$editFormId"
+                    name="name"
+                    placeholder="American Airlines"
+                    class="block w-full"
+                />
+            </x-form-input-container>
+
             <x-form-input-container
-                formId="editAirlineForm"
-                name="name"
-                label="Name"
-                placeholder="American Airlines"
-            />
+                :forForm="$editFormId"
+                forInput="description"
+                class="mt-3"
+            >
+                <x-label :forForm="$createFormId" for="description">Description</x-label>
+
+                <x-input
+                    :forForm="$editFormId"
+                    name="description"
+                    placeholder="American Airlines was founded in 1978"
+                    class="block w-full"
+                />
+            </x-form-input-container>
         </form>
     </x-modal>
 
