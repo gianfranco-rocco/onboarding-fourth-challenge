@@ -36,7 +36,11 @@ class CityService
             'outgoingFlights'
         ])
         ->when($airline, function ($query) use ($airline) {
-            $query->whereHas('airlines', function ($query) use ($airline) {
+            $query
+            ->whereHas('incomingFlights', function ($query) use ($airline) {
+                $query->where('airline_id', $airline);
+            })
+            ->orWhereHas('outgoingFlights', function ($query) use ($airline) {
                 $query->where('airline_id', $airline);
             });
         })
