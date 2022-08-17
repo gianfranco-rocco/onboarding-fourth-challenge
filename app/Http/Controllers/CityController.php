@@ -21,7 +21,7 @@ class CityController extends Controller
 
     public function index(Request $request): View|CursorPaginator
     {
-        $cities = $this->cityService->getCursorPaginated(10);
+        $cities = $this->cityService->getCursorPaginated(10, $request->get('airline', null), $request->get('sort', null));
 
         if ($request->wantsJson()) {
             return $cities;
