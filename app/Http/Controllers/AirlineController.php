@@ -13,7 +13,7 @@ class AirlineController extends Controller
     public function __invoke(Request $request, AirlineService $airlineService, CityService $cityService): JsonResponse|View
     {
         $response = [
-            'airlines' => $airlineService->getCursorPaginated(10, $request->get('destination_city', 0), $request->get('active_flights', 0)),
+            'airlines' => $airlineService->getCursorPaginated(10, $request->get('destination_city', 0), $request->get('active_flights', null)),
             'cities' => $cityService->get()
         ];
         

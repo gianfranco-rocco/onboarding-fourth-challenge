@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AirlineController as ApiAirlineController;
 use App\Http\Controllers\Api\CityController as ApiCityController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,5 +23,16 @@ Route::controller(ApiCityController::class)
         Route::get('/{city}', 'show')->name('show');
         Route::put('/{city}', 'update')->name('update');
         Route::delete('/{city}', 'destroy')->name('destroy');
+    }
+);
+
+Route::controller(ApiAirlineController::class)
+    ->prefix('airlines')
+    ->name('airlines.')
+    ->group(function () {
+        Route::post('/', 'store')->name('store');
+        Route::get('/{airline}', 'show')->name('show');
+        Route::put('/{airline}', 'update')->name('update');
+        Route::delete('/{airline}', 'destroy')->name('destroy');
     }
 );

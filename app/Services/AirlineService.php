@@ -16,7 +16,7 @@ class AirlineService
         ]);
     }
 
-    public function getCursorPaginated(int $total = 15, int $destinationCity = 0, int $activeFlights = 0): CursorPaginator
+    public function getCursorPaginated(int $total = 15, int $destinationCity = 0, ?int $activeFlights = null): CursorPaginator
     {
         return Airline::withCount('activeFlights')
         ->when($destinationCity, function ($query) use ($destinationCity) {
@@ -24,8 +24,8 @@ class AirlineService
                 $query->where('destination_city_id', $destinationCity);
             });
         })
-        ->when($activeFlights, function ($query) use ($activeFlights) {
-            $query->having('active_flights_count', '>=', $activeFlights);
+        ->when(is_int($activeFlights), function ($query) use ($activeFlights) {
+            $query->having('active_flights_count', $activeFlights);
         })
         ->orderBy('id', 'desc')
         ->cursorPaginate($total)
