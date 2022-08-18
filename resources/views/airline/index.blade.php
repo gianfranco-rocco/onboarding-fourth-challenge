@@ -245,12 +245,25 @@
         const editAirline = (airlineId) => {
             const url = '{{ route("airlines.show", ["airline" => "airlineId"]) }}'.replace('airlineId', airlineId);
 
-            $.ajax(url, {
-                headers: {
-                    Accept: 'application/json'
-                },
+            fetch(url,{
                 method: 'GET',
-                success: function (response) {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const error = JSON.parse(text);
+                        
+                        throw new Error(error.message);
+                    });
+                }
+
+                return response.json();
+            })
+            .then((response) => {
+                if (response != undefined) {
                     const airline = response.data;
                     const modalId = 'editAirlineModal';
                     const formId = 'editAirlineForm';
@@ -275,11 +288,9 @@
                     $(`#${formId}`).attr('onsubmit', onclick);
                     
                     toggleModal(modalId);
-                },
-                error: function (response) {
-                    Toast.danger(response.responseJSON.message);
                 }
-            });
+            })
+            .catch((error) => Toast.danger(error));
         }
 
         const updateAirline = (modalId, airlineId) => {
