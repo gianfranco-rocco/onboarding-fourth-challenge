@@ -496,7 +496,7 @@
         const openDeleteAirlineModal = (airlineId, airlineName) => {
             const modalId = 'deleteAirlineModal';
 
-            $(`#${modalId}Message`).text(`Are you sure you want to delete '${airlineName}' airline?`);
+            $(`#${modalId}Message`).html(`Are you sure you want to delete <strong>${airlineName} (ID ${airlineId})</strong> airline?`);
             $(`#${modalId}SubmitBtn`).attr('onclick', `deleteAirline(${airlineId})`);
 
             toggleModal(modalId);
