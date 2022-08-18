@@ -23,7 +23,7 @@ class AirlineController extends Controller
         }
 
         return response()->json([
-            'message' => "Created airline <strong>ID {$airline->id}</strong> successfully."
+            'message' => "Created airline 'ID {$airline->id}' successfully."
         ]);
     }
 
@@ -43,7 +43,7 @@ class AirlineController extends Controller
         }
 
         return response()->json([
-            'message' => "Updated airline <strong>ID {$airline->id}</strong> successfully."
+            'message' => "Updated airline 'ID {$airline->id}' successfully."
         ], Response::HTTP_CREATED);
     }
 
@@ -60,7 +60,7 @@ class AirlineController extends Controller
         $airline->delete();
 
         return response()->json([
-            'message' => "Deleted airline <strong>ID {$airline->id}</strong> successfully."
+            'message' => "Deleted airline 'ID {$airline->id}' successfully."
         ]);
     }
 }
