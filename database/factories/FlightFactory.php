@@ -15,8 +15,8 @@ class FlightFactory extends Factory
         return [
             'departure_city_id' => $cities[0],
             'destination_city_id' => $cities[1],
-            'departure_at' => now()->subDay(),
-            'arrival_at' => now()->subDays(2)
+            'departure_at' => now(),
+            'arrival_at' => now()->addDays(2)
         ];
     }
 }
