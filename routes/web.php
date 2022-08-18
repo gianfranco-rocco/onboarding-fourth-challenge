@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CityController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +17,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('flight.index');
 })->name('home');
+
+Route::get('/cities', [CityController::class, 'index'])->name('cities.index');

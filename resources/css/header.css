@@ -1,5 +1,5 @@
 header {
-    color: var(--main-purple);
+    color: var(--main-color);
     font-weight: 500;
     border-bottom: 1px solid;
 }
@@ -10,13 +10,13 @@ header .header-app-name {
 
 header .header-icon {
     width: 35px;
-    fill: var(--main-purple);
+    fill: var(--main-color);
 }
 
 header .header-active {
-    color: var(--main-purple);
+    color: var(--main-color);
     font-weight: 700;
-    padding-bottom: 1.1rem;
+    padding-bottom: 1.2rem;
     border-bottom: 3px solid;
 }
 
@@ -25,5 +25,5 @@ header nav li a{
 }
 
 header nav li a:hover {
-    color: var(--main-purple);
+    color: var(--main-color);
 }

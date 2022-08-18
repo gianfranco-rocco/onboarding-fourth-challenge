@@ -2,14 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\City;
 use Illuminate\Database\Seeder;
 
-class DatabaseSeeder extends Seeder
+class CitySeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call([
-            CitySeeder::class
-        ]);
+        City::factory(100)->create();
     }
 }

@@ -3,9 +3,14 @@
 @tailwind utilities;
 
 :root {
-    --main-purple: rgba(119,61,189,1);
+    --main-color: #1C64F2;
 }
 
 html {
-    font-size: 18px;
+    font-size: 17px;
+}
+
+.page-title {
+    font-size: 2rem;
+    color: var(--main-color);
 }

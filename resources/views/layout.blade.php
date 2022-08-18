@@ -12,11 +12,18 @@
             - @yield('title')
         @endif
     </title>
-    @vite('resources/css/app.css')
-    @vite('resources/css/header.css')    
+    @livewireStyles
+    @toastScripts
+    @vite([
+        'resources/css/app.css',
+        'resources/css/header.css',
+    ])
     @yield('styles')
+    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.2/dist/flowbite.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+    <livewire:toasts />
     <header class="flex flex-col sm:flex-row sm:justify-between px-6 sm:px-10 py-4 header-nav drop-shadow-sm">
         <div class="flex justify-center sm:justify-start mb-4 sm:mb-0">
             <a href="/" class="flex items-center">
@@ -32,7 +39,7 @@
             <ul class="flex">
                 <li>
                     <a 
-                        href="#" 
+                        href="{{ route('cities.index') }}" 
                         @class([
                             'header-active' => Route::is('cities.*') 
                         ])
@@ -67,8 +74,73 @@
     </header>
 
     <main class="px-6 sm:px-10 py-4">
+        <h1 class="mb-4 page-title">@yield('title')</h1>
+
         @yield('body')
     </main>
+
+    @livewireScripts
+
+    <script src="https://unpkg.com/flowbite@1.5.2/dist/flowbite.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <script type="module">
+        const inputErrorClasses = 'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400';
+        const labelErrorClasses = 'text-red-700 dark:text-red-500';
+
+        const displayFormErrorsFromResponse = (response, formId) => {
+            for (const [key, errors] of Object.entries(response.responseJSON.errors)) {
+                const inputId = `${formId}-${key}`;
+
+                enableErrorClasses(inputId);
+                errors.forEach(error => appendErrorMessage(inputId, error));
+            }
+        }
+
+        const enableErrorClasses = (inputId) => {
+            $(`#${inputId}`).addClass(inputErrorClasses);
+            $(`#${inputId}-label`).addClass(labelErrorClasses);
+        }
+
+        const disableErrorsFromForm = (formId) => {
+            const formElements = document.getElementById(formId).elements;
+
+            Array.from(formElements).forEach(({id: inputId}) => {
+                $(`#${inputId}`).removeClass(inputErrorClasses);
+                $(`#${inputId}-label`).removeClass(labelErrorClasses);
+            });
+        }
+
+        const appendErrorMessage = (inputId, message) => {
+            $(`#${inputId}-container`).append(`<p class="mt-2 text-sm text-red-600 dark:text-red-500 error-message">${message}</p>`);
+        }
+
+        const removeErrorMessages = () => {
+            $(".error-message").remove();
+        }
+
+        const clearErrorsFromForm = (formId) => {
+            removeErrorMessages();
+            disableErrorsFromForm(formId);
+        }
+
+        const toggleModal = (modalId) => {
+            $(`#${modalId}ToggleBtn`).click();
+        }
+
+        const setInputValue = (inputId, value) => {
+            $(`#${inputId}`).attr('value', value);
+        }
+
+        Object.assign(window, {
+            displayFormErrorsFromResponse,
+            removeErrorMessages,
+            disableErrorsFromForm,
+            clearErrorsFromForm,
+            toggleModal,
+            setInputValue
+        });
+    </script>
 
     @yield('scripts')
 </body>
