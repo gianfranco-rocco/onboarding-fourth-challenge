@@ -109,19 +109,19 @@
         </form>
     </x-modal>
 
+    @php
+        $editFormId = 'editAirlineForm';
+    @endphp
+
     <x-modal 
         id="editAirlineModal"
         title="Edit airline"
         submitBtnLabel="Update" 
-        closeBtnOnclick="clearForm(editAirlineForm.id)"
+        closeBtnOnclick="clearForm({{ $editFormId }}.id)"
     >
-        @php
-            $editFormId = 'editAirlineForm';
-        @endphp
-
         <form id="{{ $editFormId }}">
             <x-form-input-container :forForm="$editFormId" forInput="name">
-                <x-label :forForm="$createFormId" for="name">Name</x-label>
+                <x-label :forForm="$editFormId" for="name">Name</x-label>
 
                 <x-input
                     :forForm="$editFormId"
@@ -136,7 +136,7 @@
                 forInput="description"
                 class="mt-3"
             >
-                <x-label :forForm="$createFormId" for="description">Description</x-label>
+                <x-label :forForm="$editFormId" for="description">Description</x-label>
 
                 <x-input
                     :forForm="$editFormId"
@@ -144,6 +144,26 @@
                     placeholder="American Airlines was founded in 1978"
                     class="block w-full"
                 />
+            </x-form-input-container>
+
+            <x-form-input-container
+                :forForm="$editFormId"
+                forInput="cities"
+                class="mt-3"
+            >
+                <x-label :forForm="$editFormId" for="cities">Cities</x-label>
+
+                <x-dropdown id="{{ $editFormId }}-cities" class="hover:text-white dark:hover:bg-blue-700 w-full text-left" onchange="addCityToSelectedCities(this, '{{ $editFormId }}')">
+                    <option value="" selected>Choose</option>
+    
+                    @forelse($cities as $city)
+                        <option value="{{ $city->id }}">{{ $city->name }}</option>
+                    @empty
+                        <option value="" disabled>No cities available</option>
+                    @endforelse
+                </x-dropdown>
+
+                <div id="{{ $editFormId }}-selectedCitiesContainer" class="mt-2 flex flex-wrap hidden"></div>
             </x-form-input-container>
         </form>
     </x-modal>
@@ -215,11 +235,25 @@
                 },
                 method: 'GET',
                 success: function (response) {
+                    const airline = response.data;
                     const modalId = 'editAirlineModal';
                     const formId = 'editAirlineForm';
                     const onclick = `updateAirline('${modalId}', ${airlineId})`;
 
-                    setInputValue(`${formId}-name`, response.data.name);
+                    setInputValue(`${formId}-name`, airline.name);
+                    setInputValue(`${formId}-description`, airline.description);
+
+                    selectedCities = airline.cities;
+
+                    if (selectedCities.length) {
+                        removeSelectedCitiesFromCities();
+    
+                        renderCitiesDropdownOptions(formId);
+    
+                        renderSelectedCitiesItems(formId)
+    
+                        showSelectedCitiesContainer(formId);
+                    }
 
                     $(`#${modalId}SubmitBtn`).attr('onclick', onclick);
                     $(`#${formId}`).attr('onsubmit', onclick);
@@ -301,23 +335,27 @@
             });
         }
 
+        const removeSelectedCitiesFromCities = () => {
+            selectedCities.forEach(({id: selectedCityId}) => {
+                cities = cities.filter(city => city.id != selectedCityId);
+            });
+        }
+
         const addCityToSelectedCities = (element, formId) => {
             const id = element.value;
-
-            if (!selectedCities.length) {
-                toggleSelectedCitiesContainer(formId);
-            }
 
             selectedCities.push({
                 id,
                 name: $(`#${formId}-cities option[value=${id}]`).text()
             });
 
-            cities = cities.filter(city => city.id != id);
+            removeSelectedCitiesFromCities();
 
             renderCitiesDropdownOptions(formId);
 
-            renderSelectedCities(formId);
+            renderSelectedCitiesItems(formId);
+
+            showSelectedCitiesContainer(formId);
         }
 
         const removeCityFromSelectedCities = (cityId, formId) => {
@@ -328,19 +366,35 @@
             selectedCities = selectedCities.filter(city => city != cityForDeletion);
 
             if (!selectedCities.length) {
-                toggleSelectedCitiesContainer(formId);
+                hideSelectedCitiesContainer(formId);
             }
 
             renderCitiesDropdownOptions(formId);
 
-            renderSelectedCities(formId);
+            renderSelectedCitiesItems(formId);
         }
 
-        const toggleSelectedCitiesContainer = (formId) => {
-            $(`#${formId}-selectedCitiesContainer`).toggleClass("hidden");
+        const getSelectedCitiesContainer = (formId) => {
+            return $(`#${formId}-selectedCitiesContainer`);
         }
 
-        const renderSelectedCities = (formId) => {
+        const showSelectedCitiesContainer = (formId) => {
+            const element = getSelectedCitiesContainer(formId);
+            
+            if (element.hasClass('hidden')) {
+                element.removeClass('hidden');
+            }
+        }
+
+        const hideSelectedCitiesContainer = (formId) => {
+            const element = getSelectedCitiesContainer(formId);
+            
+            if (!element.hasClass('hidden')) {
+                element.addClass('hidden');
+            }
+        }
+
+        const renderSelectedCitiesItems = (formId) => {
             let html = ``;
 
             const selectedCitiesIds = [];
@@ -355,7 +409,7 @@
                 }
 
                 html += `
-                    <span class="px-4 py-2 bg-blue-700 rounded-full text-white mr-3 mb-2" title="${ city.name }">
+                    <span class="px-4 py-2 bg-blue-700 rounded-full text-white mr-3 mt-2" title="${ city.name }">
                         ${ name } <button onclick="removeCityFromSelectedCities(${ city.id }, '${ formId }')">x</button>
                     </span>
                 `;
@@ -363,7 +417,7 @@
 
             html += `<input type="hidden" name="cities" value="${selectedCitiesIds}">`;
 
-            $(`#${formId}-selectedCitiesContainer`).empty().append(html);
+            getSelectedCitiesContainer(formId).empty().append(html);
         }
 
         const renderCitiesDropdownOptions = (formId) => {
@@ -534,7 +588,7 @@
             document.getElementById(formId).reset();
             
             if (selectedCities.length) {
-                $(`#${formId}-selectedCitiesContainer`).empty();
+                getSelectedCitiesContainer(formId).empty();
 
                 cities = orderCitiesAlphabetically(cities.concat(selectedCities));
 
@@ -542,7 +596,7 @@
 
                 renderCitiesDropdownOptions(formId);
 
-                toggleSelectedCitiesContainer(formId);
+                hideSelectedCitiesContainer(formId);
             }
 
             clearErrorsFromForm(formId);
