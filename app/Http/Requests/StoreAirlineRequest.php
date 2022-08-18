@@ -38,7 +38,7 @@ class StoreAirlineRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'cities.*.exists' => 'Invalid city.'
+            'cities.*.exists' => 'Invalid city'
         ];
     }
 

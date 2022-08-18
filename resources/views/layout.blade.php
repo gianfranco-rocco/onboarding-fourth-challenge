@@ -90,10 +90,27 @@
 
         const displayFormErrorsFromResponse = (response, formId) => {
             for (const [key, errors] of Object.entries(response.responseJSON.errors)) {
-                const inputId = `${formId}-${key}`;
+                const splittedKey = key.split('.');
+
+                /**
+                 * If after splitting the error key there's more than 1 values, then
+                 * it means it's a compound message key, e.g: cities.0, so that's why
+                 * we have select the value at index 0, which would correspond to the
+                 * actual name
+                 */
+                let inputName = key;
+                let errorAtIndex = null;
+
+                if (splittedKey.length > 1) {
+                    inputName = splittedKey[0];
+                    errorAtIndex = parseInt(splittedKey[1]) + 1;
+                }
+
+                const inputId = `${formId}-${inputName}`;
 
                 enableErrorClasses(inputId);
-                errors.forEach(error => appendErrorMessage(inputId, error));
+
+                errors.forEach(error => appendErrorMessage(inputId, error, errorAtIndex));
             }
         }
 
@@ -113,8 +130,8 @@
             });
         }
 
-        const appendErrorMessage = (inputId, message) => {
-            $(`#${inputId}-container`).append(`<p class="mt-2 text-sm text-red-600 dark:text-red-500 error-message">${message}</p>`);
+        const appendErrorMessage = (inputId, message, errorAtIndex = null) => {
+            $(`#${inputId}-container`).append(`<p class="mt-2 text-sm text-red-600 dark:text-red-500 error-message">${message} ${errorAtIndex ? `(index ${errorAtIndex})` : ''}</p>`);
         }
 
         const removeErrorMessages = () => {
