@@ -555,18 +555,29 @@
                         ? '{{ route("airlines.index", ["cursor" => request()->get("cursor")]) }}'
                         : '{{ route("airlines.index") }}';
 
-            $.ajax(url, {
-                headers: {
-                    Accept: 'application/json'
-                },
+            fetch(url,{
                 method: 'GET',
-                success: function (response) {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const error = JSON.parse(text);
+                        
+                        throw new Error(error.message);
+                    });
+                }
+
+                return response.json();
+            })
+            .then((response) => {
+                if (response != undefined) {
                     loadAirlinesIntoTable(response.airlines);
-                },
-                error: function (response) {
-                    Toast.danger("An error occurred while refreshing records.");
-                },
-            });
+                }
+            })
+            .catch((error) => Toast.danger("An error occurred while refreshing records."));
         }
 
         const setFilterAndSortingFieldsValues = () => {
