@@ -24,7 +24,7 @@ class AirlineController extends Controller
 
         return response()->json([
             'message' => "Created airline 'ID {$airline->id}' successfully."
-        ]);
+        ], Response::HTTP_CREATED);
     }
 
     public function show(Airline $airline): JsonResource
@@ -44,7 +44,7 @@ class AirlineController extends Controller
 
         return response()->json([
             'message' => "Updated airline 'ID {$airline->id}' successfully."
-        ], Response::HTTP_CREATED);
+        ]);
     }
 
     /**
