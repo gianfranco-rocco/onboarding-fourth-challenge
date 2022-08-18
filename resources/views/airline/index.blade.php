@@ -221,7 +221,7 @@
                         if (response.status == HTTP_UNPROCESSABLE_CONTENT) {
                             displayFormErrorsFromResponse(error.errors, formId);
                         } else {
-                            throw new Error(error);
+                            throw new Error(error.message);
                         }
                     });
                 }
