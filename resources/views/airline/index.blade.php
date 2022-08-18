@@ -410,7 +410,7 @@
 
                 html += `
                     <span class="px-4 py-2 bg-blue-700 rounded-full text-white mr-3 mt-2" title="${ city.name }">
-                        ${ name } <button onclick="removeCityFromSelectedCities(${ city.id }, '${ formId }')">x</button>
+                        ${ name } <button type="button" title="Remove '${ city.name }' city" onclick="removeCityFromSelectedCities(${ city.id }, '${ formId }')" class="ml-2">x</button>
                     </span>
                 `;
             });
