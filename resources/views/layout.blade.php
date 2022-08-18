@@ -88,8 +88,8 @@
         const inputErrorClasses = 'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400';
         const labelErrorClasses = 'text-red-700 dark:text-red-500';
 
-        const displayFormErrorsFromResponse = (response, formId) => {
-            for (const [key, errors] of Object.entries(response.responseJSON.errors)) {
+        const displayFormErrorsFromResponse = (responseErrors, formId) => {
+            for (const [key, errors] of Object.entries(responseErrors)) {
                 const splittedKey = key.split('.');
 
                 /**

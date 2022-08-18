@@ -144,7 +144,7 @@
                 },
                 error: function (response) {
                     if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        displayFormErrorsFromResponse(response, formId);
+                        displayFormErrorsFromResponse(response.responseJSON.errors, formId);
                     } else {
                         Toast.danger(response.responseJSON.message);
                     }
@@ -204,7 +204,7 @@
                 },
                 error: function (response) {
                     if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        displayFormErrorsFromResponse(response, formId);
+                        displayFormErrorsFromResponse(response.responseJSON.errors, formId);
                     } else {
                         Toast.danger(response.responseJSON.message);
                     }

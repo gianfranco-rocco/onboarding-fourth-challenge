@@ -194,20 +194,42 @@
             setFilterAndSortingFieldsValues();
         });
 
+        const getFormValues = (formId) => {
+            const formData = new FormData(document.getElementById(formId));
+            
+            return Object.fromEntries(formData.entries());
+        }
+
         const saveAirline = (modalId) => {
             const formId = 'newAirlineForm';
 
-            $.ajax('{{ route("airlines.store") }}', {
-                data: $(`#${formId}`).serialize(),
-                dataType: 'json',
-                headers: {
-                    Accept: 'application/json'
-                },
+            clearErrorsFromForm(formId);
+
+            fetch('{{ route("airlines.store") }}',{
                 method: 'POST',
-                beforeSend: function () {
-                    clearErrorsFromForm(formId);
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
                 },
-                success: function (response) {
+                body: JSON.stringify(getFormValues(formId))
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const error = JSON.parse(text);
+
+                        if (response.status == HTTP_UNPROCESSABLE_CONTENT) {
+                            displayFormErrorsFromResponse(error.errors, formId);
+                        } else {
+                            throw new Error(error);
+                        }
+                    });
+                }
+
+                return response.json();
+            })
+            .then((response) => {
+                if (response != undefined) {
                     clearForm(formId);
 
                     getAndLoadAirlines(false);
@@ -215,15 +237,9 @@
                     toggleModal(modalId);
 
                     Toast.success(response.message);
-                },
-                error: function (response) {
-                    if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        displayFormErrorsFromResponse(response, formId);
-                    } else {
-                        Toast.danger(response.responseJSON.message);
-                    }
-                },
-            });
+                }
+            })
+            .catch((error) => Toast.danger(error));
         }
 
         const editAirline = (airlineId) => {
