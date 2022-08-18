@@ -106,8 +106,10 @@
             const formElements = document.getElementById(formId).elements;
 
             Array.from(formElements).forEach(({id: inputId}) => {
-                $(`#${inputId}`).removeClass(inputErrorClasses);
-                $(`#${inputId}-label`).removeClass(labelErrorClasses);
+                if (inputId) {
+                    $(`#${inputId}`).removeClass(inputErrorClasses);
+                    $(`#${inputId}-label`).removeClass(labelErrorClasses);
+                }
             });
         }
 

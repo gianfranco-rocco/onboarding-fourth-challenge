@@ -9,7 +9,7 @@ class Dropdown extends Component
 {
     public string $id, $name, $onchange;
     
-    public function __construct(string $id, string $name, string $onchange)
+    public function __construct(string $id, string $name = '', string $onchange = '')
     {
         $this->id = $id;
         $this->name = $name;

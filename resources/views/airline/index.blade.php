@@ -93,6 +93,18 @@
                 class="mt-3"
             >
                 <x-label :forForm="$createFormId" for="cities">Cities</x-label>
+
+                <x-dropdown id="{{ $createFormId }}-cities" class="hover:text-white dark:hover:bg-blue-700 w-full text-left" onchange="addCityToSelectedCities(this, '{{ $createFormId }}')">
+                    <option value="" selected>Choose</option>
+    
+                    @forelse($cities as $city)
+                        <option value="{{ $city->id }}">{{ $city->name }}</option>
+                    @empty
+                        <option value="" disabled>No cities available</option>
+                    @endforelse
+                </x-dropdown>
+
+                <div id="{{ $createFormId }}-selectedCitiesContainer" class="mt-4 flex flex-wrap hidden"></div>
             </x-form-input-container>
         </form>
     </x-modal>
@@ -148,6 +160,9 @@
 @section('scripts')
     <script>
         const HTTP_UNPROCESSABLE_CONTENT = 422;
+
+        let cities = @json($cities);
+        let selectedCities = [];
 
         $('form').on('submit', function (e) {
             e.preventDefault();
@@ -283,6 +298,91 @@
                         Toast.danger(message);
                     }
                 }
+            });
+        }
+
+        const addCityToSelectedCities = (element, formId) => {
+            const id = element.value;
+
+            if (!selectedCities.length) {
+                toggleSelectedCitiesContainer(formId);
+            }
+
+            selectedCities.push({
+                id,
+                name: $(`#${formId}-cities option[value=${id}]`).text()
+            });
+
+            cities = cities.filter(city => city.id != id);
+
+            renderCitiesDropdownOptions(formId);
+
+            renderSelectedCities(formId);
+        }
+
+        const removeCityFromSelectedCities = (cityId, formId) => {
+            const cityForDeletion = selectedCities.find(city => city.id == cityId);
+
+            cities.push(cityForDeletion);
+
+            selectedCities = selectedCities.filter(city => city != cityForDeletion);
+
+            if (!selectedCities.length) {
+                toggleSelectedCitiesContainer(formId);
+            }
+
+            renderCitiesDropdownOptions(formId);
+
+            renderSelectedCities(formId);
+        }
+
+        const toggleSelectedCitiesContainer = (formId) => {
+            $(`#${formId}-selectedCitiesContainer`).toggleClass("hidden");
+        }
+
+        const renderSelectedCities = (formId) => {
+            let html = ``;
+
+            const selectedCitiesIds = [];
+
+            selectedCities.forEach(city => {
+                selectedCitiesIds.push(city.id);
+
+                let name = city.name;
+
+                if (name.length > 13) {
+                    name = `${ city.name.substring(0, 10) }...`;
+                }
+
+                html += `
+                    <span class="px-4 py-2 bg-blue-700 rounded-full text-white mr-3 mb-2" title="${ city.name }">
+                        ${ name } <button onclick="removeCityFromSelectedCities(${ city.id }, '${ formId }')">x</button>
+                    </span>
+                `;
+            });
+
+            html += `<input type="hidden" name="cities" value="${selectedCitiesIds}">`;
+
+            $(`#${formId}-selectedCitiesContainer`).empty().append(html);
+        }
+
+        const renderCitiesDropdownOptions = (formId) => {
+            let options = `<option value="" selected disabled>Choose</option>`;
+
+            cities = orderCitiesAlphabetically(cities);
+
+            cities.forEach(city => {
+                options += `
+                    <option value="${ city.id }">${ city.name } </option>
+                `;
+            });
+
+            $(`#${formId}-cities`).empty().append(options);
+        }
+
+        const orderCitiesAlphabetically = (cities) => {
+            return cities.sort((x, y) => {
+                return x.name.localeCompare(y.name);
             });
         }
 
@@ -432,6 +532,19 @@
 
         const clearForm = (formId) => {
             document.getElementById(formId).reset();
+            
+            if (selectedCities.length) {
+                $(`#${formId}-selectedCitiesContainer`).empty();
+
+                cities = orderCitiesAlphabetically(cities.concat(selectedCities));
+
+                selectedCities = [];
+
+                renderCitiesDropdownOptions(formId);
+
+                toggleSelectedCitiesContainer(formId);
+            }
+
             clearErrorsFromForm(formId);
         }
     </script>

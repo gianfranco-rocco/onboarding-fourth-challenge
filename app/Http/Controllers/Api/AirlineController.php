@@ -15,7 +15,9 @@ class AirlineController extends Controller
     {
         $airline = Airline::create($request->validated());
 
-        // $airline->cities()->attach($request->cities);
+        if ($request->cities) {
+            $airline->cities()->attach($request->cities);
+        }
 
         return response()->json([
             'message' => 'Airline created successfully.'

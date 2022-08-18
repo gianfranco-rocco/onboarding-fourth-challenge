@@ -25,13 +25,13 @@ class StoreAirlineRequest extends FormRequest
                 'string',
                 'max:255'
             ],
-            // 'cities' => [
-            //     'required',
-            //     'array'
-            // ],
-            // 'cities.*' => [
-            //     'exists:cities,id'
-            // ]
+            'cities' => [
+                'nullable',
+                'array'
+            ],
+            'cities.*' => [
+                'exists:cities,id'
+            ]
         ];
     }
 
@@ -40,5 +40,14 @@ class StoreAirlineRequest extends FormRequest
         return [
             'cities.*.exists' => 'Invalid city.'
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        if ($this->cities) {
+            $this->merge([
+                'cities' => explode(',', $this->cities)
+            ]);
+        }
     }
 }
