@@ -5,15 +5,13 @@ namespace App\Services;
 use App\Models\Airline;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\CursorPaginator;
+use Illuminate\Support\Facades\Cache;
 
 class AirlineService
 {
     public function get(): Collection
     {
-        return Airline::all([
-            'id',
-            'name'
-        ]);
+        return Cache::rememberForever('airlines', fn () => Airline::orderBy('name')->get(['id', 'name']));
     }
 
     public function getCursorPaginated(int $total = 15, int $destinationCity = 0, ?int $activeFlights = null): CursorPaginator
