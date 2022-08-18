@@ -342,34 +342,45 @@
 
             const modalId = 'deleteAirlineModal';
 
-            $.ajax(url, {
-                data: {
-                    confirmation: confirm
-                },
-                dataType: 'json',
-                headers: {
-                    Accept: 'application/json'
-                },
+            fetch(url,{
                 method: 'DELETE',
-                success: function (response) {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    confirmation: confirm
+                })
+            })
+            .then((response) => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        const message = JSON.parse(text).message;
+
+                        if (response.status == HTTP_UNPROCESSABLE_CONTENT) {
+                            $(`#${modalId}Title`).text("Delete airline confirmation");
+                            $(`#${modalId}Message`).html(message);
+                            $(`#${modalId}SubmitBtn`).attr('onclick', `deleteAirline(${airlineId}, true)`).text("Confirm");
+                        } else {
+                            throw new Error(message);
+                        }
+                    });
+                }
+
+                return response.json();
+            })
+            .then((response) => {
+                if (response != undefined) {
                     getAndLoadAirlines();
+
                     toggleModal(modalId);
+
                     resetDeleteAirlineModal();
 
                     Toast.success(response.message);
-                },
-                error: function (response) {
-                    const message = response.responseJSON.message;
-
-                    if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        $(`#${modalId}Title`).text("Delete airline confirmation");
-                        $(`#${modalId}Message`).html(message);
-                        $(`#${modalId}SubmitBtn`).attr('onclick', `deleteAirline(${airlineId}, true)`).text("Confirm");
-                    } else {
-                        Toast.danger(message);
-                    }
                 }
-            });
+            })
+            .catch((error) => Toast.danger(error));
         }
 
         const removeSelectedCitiesFromCities = () => {
