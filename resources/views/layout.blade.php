@@ -60,7 +60,7 @@
                 </li>
                 <li>
                     <a 
-                        href="#" 
+                        href="{{ route('flights.index') }}" 
                         @class([
                             "ml-8",
                             'header-active' => Route::is('home') || Route::is('flights.*')
