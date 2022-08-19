@@ -9,6 +9,7 @@ use App\Services\AirlineService;
 use App\Services\CityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Collection;
 use Tests\TestCase;
 
 class AirlineTest extends TestCase
@@ -26,6 +27,59 @@ class AirlineTest extends TestCase
 
         $this->cityService = new CityService();
         $this->airlineService = new AirlineService();
+    }
+
+    private function getCities(int $amount = 3, array $columns = ['*']): Collection
+    {
+        return City::take($amount)->get($columns);
+    }
+
+    private function parseCitiesForRequest(Collection $cities): string
+    {
+        return $cities->implode(',');
+    }
+
+    private function getCreatedJsonResponse(Airline $airline): array
+    {
+        return [
+            'message' => "Created airline 'ID {$airline->id}' successfully."
+        ];
+    }
+
+    private function getUpdatedJsonResponse(Airline $airline): array
+    {
+        return [
+            'message' => "Updated airline 'ID {$airline->id}' successfully."
+        ];
+    }
+
+    private function assertDatabaseHasCities(Airline $airline, Collection $cities): void
+    {
+        $cities->each(function ($city) use ($airline) {
+            $this->assertDatabaseHas('airline_city', [
+                'airline_id' => $airline->id,
+                'city_id' => $city
+            ]);
+        });
+    }
+
+    private function assertDatabaseMissingCities(Airline $airline, Collection $cities): void
+    {
+        $cities->each(function ($city) use ($airline) {
+            $this->assertDatabaseMissing('airline_city', [
+                'airline_id' => $airline->id,
+                'city_id' => $city
+            ]);
+        });
+    }
+
+    private function getAirlineWithCities(int $minCitiesAmount = 2): Airline
+    {
+        return Airline::with('cities')
+        ->whereHas('cities')
+        ->withCount('cities')
+        ->havingRaw("cities_count >= {$minCitiesAmount}")
+        ->first();
     }
 
     public function test_index_route_renders_view_with_airlines_and_cities_data(): void
@@ -98,11 +152,7 @@ class AirlineTest extends TestCase
 
     public function test_index_route_filtered_by_destination_city_returns_view_with_cities_and_one_airline(): void
     {
-        $airline = Airline::with('cities')
-        ->whereHas('cities')
-        ->withCount('cities')
-        ->havingRaw('cities_count >= 2')
-        ->first();
+        $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
 
@@ -129,11 +179,7 @@ class AirlineTest extends TestCase
 
     public function test_index_route_filtered_by_active_flights_returns_view_with_cities_and_one_airline(): void
     {
-        $airline = Airline::with('cities')
-        ->whereHas('cities')
-        ->withCount('cities')
-        ->havingRaw('cities_count >= 2')
-        ->first();
+        $airline = $this->getAirlineWithCities();
 
         $flights = Flight::factory()
         ->count(2)
@@ -159,11 +205,7 @@ class AirlineTest extends TestCase
 
     public function test_index_route_filtered_by_destination_city_and_active_flights_returns_view_with_cities_and_one_airline(): void
     {
-        $airline = Airline::with('cities')
-        ->whereHas('cities')
-        ->withCount('cities')
-        ->havingRaw('cities_count >= 2')
-        ->first();
+        $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
         
@@ -199,12 +241,12 @@ class AirlineTest extends TestCase
 
     public function test_store_api_creates_airline(): void
     {
-        $cities = City::take(3)->get(['id'])->pluck('id');
+        $cities = $this->getCities(3, ['id'])->pluck('id');
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(100),
-            'cities' => $cities->implode(',')
+            'cities' => $this->parseCitiesForRequest($cities)
         ];
 
         $response = $this->postJson(route('airlines.store'), $data);
@@ -213,18 +255,11 @@ class AirlineTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson([
-                'message' => "Created airline 'ID {$airline->id}' successfully."
-            ]);
+            ->assertJson($this->getCreatedJsonResponse($airline));
 
         $this->assertDatabaseHas('airlines', collect($data)->except('cities')->all());
 
-        $cities->each(function ($city) use ($airline) {
-            $this->assertDatabaseHas('airline_city', [
-                'airline_id' => $airline->id,
-                'city_id' => $city
-            ]);
-        });
+        $this->assertDatabaseHasCities($airline, $cities);
     }
 
     public function test_store_api_creates_airline_without_cities(): void
@@ -240,9 +275,7 @@ class AirlineTest extends TestCase
 
         $response
             ->assertCreated()
-            ->assertJson([
-                'message' => "Created airline 'ID {$airline->id}' successfully."
-            ]);;
+            ->assertJson($this->getCreatedJsonResponse($airline));
 
         $this
         ->assertDatabaseHas('airlines', $data)
@@ -310,12 +343,12 @@ class AirlineTest extends TestCase
 
     public function test_store_api_doesnt_create_airline_when_any_city_is_invalid(): void
     {
-        $cities = City::take(3)->get(['id'])->pluck('id')->concat(["123333", "23232"]);
+        $cities = $this->getCities(3, ['id'])->pluck('id')->concat(["123333", "23232"]);
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(100),
-            'cities' => $cities->implode(',')
+            'cities' => $this->parseCitiesForRequest($cities)
         ];
 
         $response = $this->postJson(route('airlines.store'), $data);
@@ -346,5 +379,132 @@ class AirlineTest extends TestCase
         $response = $this->getJson(route('airlines.show', 232323));
 
         $response->assertNotFound();
+    }
+
+    public function test_update_api_updates_name_and_description(): void
+    {
+        $airline = Airline::first();
+
+        $prevData = [
+            'name' => $airline->name,
+            'description' => $airline->description
+        ];
+
+        $newData = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text()
+        ];
+
+        $response = $this->putJson(route('airlines.update', $airline), $newData);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getUpdatedJsonResponse($airline));
+
+        $this
+            ->assertDatabaseHas('airlines', $newData)
+            ->assertDatabaseMissing('airlines', $prevData);
+    }
+
+    public function test_update_api_doesnt_update_when_name_repeated(): void
+    {
+        $airlineWithExistingName = Airline::first();
+        $airlineToUpdate = Airline::skip(1)->first();
+
+        $data = [
+            'name' => $airlineWithExistingName->name,
+            'description' => $this->faker()->text()
+        ];
+
+        $response = $this->putJson(route('airlines.update', $airlineToUpdate->id), $data);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'name' => 'The name has already been taken.'
+            ]);
+
+        $this->assertDatabaseMissing('airlines', $data);
+    }
+
+    public function test_update_api_updates_name_and_description_and_attaches_cities(): void
+    {
+        $airline = Airline::factory()->create();
+
+        $cities = $this->getCities(3, ['id'])->pluck('id');
+
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(),
+            'cities' => $this->parseCitiesForRequest($cities)
+        ];
+
+        $this->assertDatabaseMissing('airline_city', [
+            'airline_id' => $airline->id
+        ]);
+
+        $response = $this->putJson(route('airlines.update', $airline), $data);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getUpdatedJsonResponse($airline));
+
+        $this->assertDatabaseHas('airlines', collect($data)->except('cities')->all());
+
+        $this->assertDatabaseHasCities($airline, $cities);
+    }
+
+    public function test_update_api_updates_name_and_description_and_attaches_cities_while_retaining_previously_attached_cities(): void
+    {   
+        $airline = $this->getAirlineWithCities();
+        
+        $prevCities = $airline->cities->pluck('id');
+
+        $newCities = $this->getCities(3, ['id'])->pluck('id');
+
+        $cities = $prevCities->concat($newCities);
+
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(),
+            'cities' => $this->parseCitiesForRequest($cities)
+        ];
+
+        $response = $this->putJson(route('airlines.update', $airline), $data);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getUpdatedJsonResponse($airline));
+
+        $this->assertDatabaseHas('airlines', collect($data)->except('cities')->all());
+
+        $this->assertDatabaseHasCities($airline, $cities);
+    }
+
+    public function test_update_api_updates_name_and_description_and_attaches_cities_but_detaches_previously_attached_cities(): void
+    {   
+        $airline = $this->getAirlineWithCities();
+        
+        $prevCities = $airline->cities->pluck('id');
+
+        $newCities = $this->getCities(3, ['id'])->pluck('id');
+
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(),
+            'cities' => $this->parseCitiesForRequest($newCities)
+        ];
+
+        $response = $this->putJson(route('airlines.update', $airline), $data);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getUpdatedJsonResponse($airline));
+
+        $this->assertDatabaseHas('airlines', collect($data)->except('cities')->all());
+
+        $this->assertDatabaseMissingCities($airline, $prevCities);
+
+        $this->assertDatabaseHasCities($airline, $newCities);
     }
 }
