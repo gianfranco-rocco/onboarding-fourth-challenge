@@ -53,12 +53,19 @@ class AirlineTest extends TestCase
         ];
     }
 
+    private function getDeletedJsonResponse(Airline $airline): array
+    {
+        return [
+            'message' => "Deleted airline 'ID {$airline->id}' successfully."
+        ];
+    }
+
     private function assertDatabaseHasCities(Airline $airline, Collection $cities): void
     {
         $cities->each(function ($city) use ($airline) {
             $this->assertDatabaseHas('airline_city', [
                 'airline_id' => $airline->id,
-                'city_id' => $city
+                'city_id' => $city->id
             ]);
         });
     }
@@ -68,7 +75,7 @@ class AirlineTest extends TestCase
         $cities->each(function ($city) use ($airline) {
             $this->assertDatabaseMissing('airline_city', [
                 'airline_id' => $airline->id,
-                'city_id' => $city
+                'city_id' => $city->id
             ]);
         });
     }
@@ -150,18 +157,35 @@ class AirlineTest extends TestCase
             ]);
     }
 
+    private function createFlightsForAirline(
+        Airline $airline,
+        ?int $departureCityId = null,
+        ?int $destinationCityId = null,
+        ?int $count = null
+    ): Flight|Collection {
+        $attributes = [];
+
+        if ($departureCityId) {
+            $attributes['departure_city_id'] = $departureCityId;
+        }
+
+        if ($destinationCityId) {
+            $attributes['destination_city_id'] = $destinationCityId;
+        }
+
+        return Flight::factory()
+        ->count($count)
+        ->for($airline)
+        ->create($attributes);
+    }
+
     public function test_index_route_filtered_by_destination_city_returns_view_with_cities_and_one_airline(): void
     {
         $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
 
-        $flight = Flight::factory()
-        ->for($airline)
-        ->create([
-            'departure_city_id' => $airline->cities[0]->id,
-            'destination_city_id' => $destinationCity->id,
-        ]);
+        $flight = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $destinationCity->id);
 
         $response = $this->get(route('airlines.index', ['destination_city' => $destinationCity]));
 
@@ -181,13 +205,7 @@ class AirlineTest extends TestCase
     {
         $airline = $this->getAirlineWithCities();
 
-        $flights = Flight::factory()
-        ->count(2)
-        ->for($airline)
-        ->create([
-            'departure_city_id' => $airline->cities[0]->id,
-            'destination_city_id' => $airline->cities[1]->id,
-        ]);
+        $flights = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $airline->cities[1]->id, 2);
 
         $response = $this->get(route('airlines.index', ['active_flights' => $flights->count()]));
 
@@ -209,13 +227,7 @@ class AirlineTest extends TestCase
 
         $destinationCity = $airline->cities[1];
         
-        $flights = Flight::factory()
-        ->count(3)
-        ->for($airline)
-        ->create([
-            'departure_city_id' => $airline->cities[0]->id,
-            'destination_city_id' => $destinationCity->id,
-        ]);
+        $flights = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $destinationCity->id, 3);
 
         $response = $this->get(route('airlines.index', [
             'destination_city' => $destinationCity->id,
@@ -241,12 +253,12 @@ class AirlineTest extends TestCase
 
     public function test_store_api_creates_airline(): void
     {
-        $cities = $this->getCities(3, ['id'])->pluck('id');
+        $cities = $this->getCities(3, ['id']);
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(100),
-            'cities' => $this->parseCitiesForRequest($cities)
+            'cities' => $this->parseCitiesForRequest($cities->pluck('id'))
         ];
 
         $response = $this->postJson(route('airlines.store'), $data);
@@ -431,12 +443,12 @@ class AirlineTest extends TestCase
     {
         $airline = Airline::factory()->create();
 
-        $cities = $this->getCities(3, ['id'])->pluck('id');
+        $cities = $this->getCities(3, ['id']);
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(),
-            'cities' => $this->parseCitiesForRequest($cities)
+            'cities' => $this->parseCitiesForRequest($cities->pluck('id'))
         ];
 
         $this->assertDatabaseMissing('airline_city', [
@@ -457,17 +469,17 @@ class AirlineTest extends TestCase
     public function test_update_api_updates_name_and_description_and_attaches_cities_while_retaining_previously_attached_cities(): void
     {   
         $airline = $this->getAirlineWithCities();
-        
-        $prevCities = $airline->cities->pluck('id');
 
-        $newCities = $this->getCities(3, ['id'])->pluck('id');
+        $prevCities = $airline->cities;
+
+        $newCities = $this->getCities(3, ['id']);
 
         $cities = $prevCities->concat($newCities);
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(),
-            'cities' => $this->parseCitiesForRequest($cities)
+            'cities' => $this->parseCitiesForRequest($cities->pluck('id'))
         ];
 
         $response = $this->putJson(route('airlines.update', $airline), $data);
@@ -485,14 +497,14 @@ class AirlineTest extends TestCase
     {   
         $airline = $this->getAirlineWithCities();
         
-        $prevCities = $airline->cities->pluck('id');
+        $prevCities = $airline->cities;
 
-        $newCities = $this->getCities(3, ['id'])->pluck('id');
+        $newCities = $this->getCities(3, ['id']);
 
         $data = [
             'name' => $this->faker()->name(),
             'description' => $this->faker()->text(),
-            'cities' => $this->parseCitiesForRequest($newCities)
+            'cities' => $this->parseCitiesForRequest($newCities->pluck('id'))
         ];
 
         $response = $this->putJson(route('airlines.update', $airline), $data);
@@ -506,5 +518,81 @@ class AirlineTest extends TestCase
         $this->assertDatabaseMissingCities($airline, $prevCities);
 
         $this->assertDatabaseHasCities($airline, $newCities);
+    }
+
+    public function test_delete_api_soft_deletes_record(): void
+    {
+        $airline = Airline::factory()->create();
+
+        $response = $this->deleteJson(route('airlines.destroy', $airline));
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getDeletedJsonResponse($airline));
+
+        $this->assertSoftDeleted($airline);
+    }
+
+    public function test_delete_api_soft_deletes_record_and_detaches_cities(): void
+    {
+        $airline = $this->getAirlineWithCities();
+
+        $response = $this->deleteJson(route('airlines.destroy', $airline), [
+            'confirmation' => true
+        ]);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getDeletedJsonResponse($airline));
+
+        $this->assertSoftDeleted($airline);
+
+        $this->assertDatabaseMissingCities($airline, $airline->cities);
+    }
+
+    public function test_delete_api_soft_deletes_record_and_detaches_cities_and_soft_deletes_flights(): void
+    {
+        $airline = $this->getAirlineWithCities();
+
+        $flights = $this->createFlightsForAirline(airline: $airline, count: 4);
+
+        $response = $this->deleteJson(route('airlines.destroy', $airline), [
+            'confirmation' => true
+        ]);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($this->getDeletedJsonResponse($airline));
+
+        $this->assertSoftDeleted($airline);
+
+        $this->assertDatabaseMissingCities($airline, $airline->cities);
+
+        $flights->each(function ($flight) {
+            $this->assertSoftDeleted($flight);
+        });
+    }
+
+    public function test_delete_api_doest_not_soft_delete_record_and_does_not_detach_cities_and_does_not_soft_delete_flights_when_confirmation_not_passed_to_request(): void
+    {
+        $airline = $this->getAirlineWithCities();
+
+        $flights = $this->createFlightsForAirline(airline: $airline, count: 4);
+
+        $response = $this->deleteJson(route('airlines.destroy', $airline));
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'confirmation' => "The airline is assigned to <strong>{$flights->count()} flight(s)</strong>, this action will delete the airline as well as every flight assigned to it."
+            ]);
+
+        $this->assertNotSoftDeleted($airline);
+
+        $this->assertDatabaseHasCities($airline, $airline->cities);
+
+        $flights->each(function ($flight) {
+            $this->assertNotSoftDeleted($flight);
+        });
     }
 }
