@@ -329,4 +329,22 @@ class AirlineTest extends TestCase
 
         $this->assertDatabaseMissing('airlines', collect($data)->except('cities')->all());
     }
+
+    public function test_show_api_returns_airline(): void
+    {
+        $airline = Airline::with('cities')->first();
+
+        $response = $this->getJson(route('airlines.show', $airline));
+
+        $response
+            ->assertSuccessful()
+            ->assertJsonPath('data', $airline->toArray());
+    }
+
+    public function test_show_api_doesnt_return_airline_when_invalid_airline_passed_to_route(): void
+    {
+        $response = $this->getJson(route('airlines.show', 232323));
+
+        $response->assertNotFound();
+    }
 }
