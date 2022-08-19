@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Airline;
+use App\Models\City;
 use App\Models\Flight;
 use App\Services\AirlineService;
 use App\Services\CityService;
@@ -194,5 +195,138 @@ class AirlineTest extends TestCase
                     && $flightsHaveSameDestinationCity;
             }
         ]);
+    }
+
+    public function test_store_api_creates_airline(): void
+    {
+        $cities = City::take(3)->get(['id'])->pluck('id');
+
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(100),
+            'cities' => $cities->implode(',')
+        ];
+
+        $response = $this->postJson(route('airlines.store'), $data);
+
+        $airline = Airline::orderBy('id', 'desc')->first(['id']);
+
+        $response
+            ->assertCreated()
+            ->assertJson([
+                'message' => "Created airline 'ID {$airline->id}' successfully."
+            ]);
+
+        $this->assertDatabaseHas('airlines', collect($data)->except('cities')->all());
+
+        $cities->each(function ($city) use ($airline) {
+            $this->assertDatabaseHas('airline_city', [
+                'airline_id' => $airline->id,
+                'city_id' => $city
+            ]);
+        });
+    }
+
+    public function test_store_api_creates_airline_without_cities(): void
+    {
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(100)
+        ];
+
+        $response = $this->postJson(route('airlines.store'), $data);
+
+        $airline = Airline::orderBy('id', 'desc')->first(['id']);
+
+        $response
+            ->assertCreated()
+            ->assertJson([
+                'message' => "Created airline 'ID {$airline->id}' successfully."
+            ]);;
+
+        $this
+        ->assertDatabaseHas('airlines', $data)
+        ->assertDatabaseMissing('airline_city', [
+            'airline_id' => $airline->id
+        ]);
+    }
+
+    public function test_store_api_doesnt_create_airline_without_description(): void
+    {
+        $data = [
+            'name' => $this->faker()->name()
+        ];
+
+        $response = $this->postJson(route('airlines.store'), $data);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'description' => 'The description field is required.'
+            ]);
+
+        $this->assertDatabaseMissing('airlines', $data);
+    }
+
+    public function test_store_api_doesnt_create_airline_without_name_and_description(): void
+    {
+        $airlinesCountBeforeRequest = Airline::count();
+        
+        $response = $this->postJson(route('airlines.store'));
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'name' => 'The name field is required.',
+                'description' => 'The description field is required.',
+            ]);
+
+        $this->assertDatabaseCount('airlines', $airlinesCountBeforeRequest);
+    }
+
+    public function test_store_api_doesnt_create_airline_with_repeated_name(): void
+    {
+        $name = $this->faker()->name();
+        
+        Airline::factory()->create([
+            'name' => $name
+        ]);
+
+        $data = [
+            'name' => $name,
+            'description' => $this->faker()->text(100)
+        ];
+
+        $response = $this->postJson(route('airlines.store'), $data);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'name' => 'The name has already been taken.'
+            ]);
+
+        $this->assertDatabaseMissing('airlines', $data);
+    }
+
+    public function test_store_api_doesnt_create_airline_when_any_city_is_invalid(): void
+    {
+        $cities = City::take(3)->get(['id'])->pluck('id')->concat(["123333", "23232"]);
+
+        $data = [
+            'name' => $this->faker()->name(),
+            'description' => $this->faker()->text(100),
+            'cities' => $cities->implode(',')
+        ];
+
+        $response = $this->postJson(route('airlines.store'), $data);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'cities.3' => "Invalid city",
+                'cities.4' => "Invalid city",
+            ]);
+
+        $this->assertDatabaseMissing('airlines', collect($data)->except('cities')->all());
     }
 }
