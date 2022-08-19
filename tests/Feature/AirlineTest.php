@@ -296,7 +296,7 @@ class AirlineTest extends TestCase
         ]);
     }
 
-    public function test_store_api_doesnt_create_airline_without_description(): void
+    public function test_store_api_does_not_create_airline_without_description(): void
     {
         $data = [
             'name' => $this->faker()->name()
@@ -313,7 +313,7 @@ class AirlineTest extends TestCase
         $this->assertDatabaseMissing('airlines', $data);
     }
 
-    public function test_store_api_doesnt_create_airline_without_name_and_description(): void
+    public function test_store_api_does_not_create_airline_without_name_and_description(): void
     {
         $airlinesCountBeforeRequest = Airline::count();
         
@@ -329,7 +329,7 @@ class AirlineTest extends TestCase
         $this->assertDatabaseCount('airlines', $airlinesCountBeforeRequest);
     }
 
-    public function test_store_api_doesnt_create_airline_with_repeated_name(): void
+    public function test_store_api_does_not_create_airline_with_repeated_name(): void
     {
         $name = $this->faker()->name();
         
@@ -353,7 +353,7 @@ class AirlineTest extends TestCase
         $this->assertDatabaseMissing('airlines', $data);
     }
 
-    public function test_store_api_doesnt_create_airline_when_any_city_is_invalid(): void
+    public function test_store_api_does_not_create_airline_when_any_city_is_invalid(): void
     {
         $cities = $this->getCities(3, ['id'])->pluck('id')->concat(["123333", "23232"]);
 
@@ -386,7 +386,7 @@ class AirlineTest extends TestCase
             ->assertJsonPath('data', $airline->toArray());
     }
 
-    public function test_show_api_doesnt_return_airline_when_invalid_airline_passed_to_route(): void
+    public function test_show_api_does_not_return_airline_when_invalid_airline_passed_to_route(): void
     {
         $response = $this->getJson(route('airlines.show', 232323));
 
@@ -418,7 +418,7 @@ class AirlineTest extends TestCase
             ->assertDatabaseMissing('airlines', $prevData);
     }
 
-    public function test_update_api_doesnt_update_when_name_repeated(): void
+    public function test_update_api_does_not_update_when_name_repeated(): void
     {
         $airlineWithExistingName = Airline::first();
         $airlineToUpdate = Airline::skip(1)->first();
@@ -573,7 +573,7 @@ class AirlineTest extends TestCase
         });
     }
 
-    public function test_delete_api_doest_not_soft_delete_record_and_does_not_detach_cities_and_does_not_soft_delete_flights_when_confirmation_not_passed_to_request(): void
+    public function test_delete_api_does_not_soft_delete_record_and_does_not_detach_cities_and_does_not_soft_delete_flights_when_confirmation_not_passed_to_request(): void
     {
         $airline = $this->getAirlineWithCities();
 
