@@ -91,24 +91,17 @@ class AirlineTest extends TestCase
 
     private function createFlightsForAirline(
         Airline $airline,
-        ?int $departureCityId = null,
-        ?int $destinationCityId = null,
+        City $departureCity,
+        City $destinationCity,
         ?int $count = null
-    ): Flight|Collection {
-        $attributes = [];
-
-        if ($departureCityId) {
-            $attributes['departure_city_id'] = $departureCityId;
-        }
-
-        if ($destinationCityId) {
-            $attributes['destination_city_id'] = $destinationCityId;
-        }
-
+    ): Flight|Collection
+    {
         return Flight::factory()
         ->count($count)
         ->for($airline)
-        ->create($attributes);
+        ->for($departureCity, 'departureCity')
+        ->for($destinationCity, 'destinationCity')
+        ->create();
     }
 
     public function test_index_route_renders_view_with_airlines_and_cities_data(): void
@@ -185,7 +178,7 @@ class AirlineTest extends TestCase
 
         $destinationCity = $airline->cities[1];
 
-        $flight = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $destinationCity->id);
+        $flight = $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity);
 
         $response = $this->get(route('airlines.index', ['destination_city' => $destinationCity]));
 
@@ -205,7 +198,7 @@ class AirlineTest extends TestCase
     {
         $airline = $this->getAirlineWithCities();
 
-        $flights = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $airline->cities[1]->id, 2);
+        $flights = $this->createFlightsForAirline($airline, $airline->cities[0], $airline->cities[1], 2);
 
         $response = $this->get(route('airlines.index', ['active_flights' => $flights->count()]));
 
@@ -227,7 +220,7 @@ class AirlineTest extends TestCase
 
         $destinationCity = $airline->cities[1];
         
-        $flights = $this->createFlightsForAirline($airline, $airline->cities[0]->id, $destinationCity->id, 3);
+        $flights = $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity, 3);
 
         $response = $this->get(route('airlines.index', [
             'destination_city' => $destinationCity->id,
@@ -554,7 +547,9 @@ class AirlineTest extends TestCase
     {
         $airline = $this->getAirlineWithCities();
 
-        $flights = $this->createFlightsForAirline(airline: $airline, count: 4);
+        $cities = $this->getCities(2);
+
+        $flights = $this->createFlightsForAirline($airline, $cities[0], $cities[1], 4);
 
         $response = $this->deleteJson(route('airlines.destroy', $airline), [
             'confirmation' => true
@@ -577,7 +572,9 @@ class AirlineTest extends TestCase
     {
         $airline = $this->getAirlineWithCities();
 
-        $flights = $this->createFlightsForAirline(airline: $airline, count: 4);
+        $cities = $this->getCities(2);
+
+        $flights = $this->createFlightsForAirline($airline, $cities[0], $cities[1], 4);
 
         $response = $this->deleteJson(route('airlines.destroy', $airline));
 
