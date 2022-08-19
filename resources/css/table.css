@@ -1,0 +1,11 @@
+table th, table td   {
+    border: 1px solid black;
+    text-align: left;
+    padding: 16px;
+    line-height: 1;
+}
+
+.table th {
+    background-color: var(--main-color);
+    color: #fff;
+}

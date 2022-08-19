@@ -1,0 +1,29 @@
+header {
+    color: var(--main-color);
+    font-weight: 500;
+    border-bottom: 1px solid;
+}
+
+header .header-app-name {
+    font-weight: 700;
+}
+
+header .header-icon {
+    width: 35px;
+    fill: var(--main-color);
+}
+
+header .header-active {
+    color: var(--main-color);
+    font-weight: 700;
+    padding-bottom: 1.2rem;
+    border-bottom: 3px solid;
+}
+
+header nav li a{
+    color: gray;
+}
+
+header nav li a:hover {
+    color: var(--main-color);
+}

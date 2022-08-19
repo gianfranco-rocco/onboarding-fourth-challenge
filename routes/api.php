@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Api\CityController as ApiCityController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::controller(ApiCityController::class)
+    ->prefix('cities')
+    ->name('cities.')
+    ->group(function () {
+        Route::post('/', 'store')->name('store');
+        Route::get('/{city}', 'show')->name('show');
+        Route::put('/{city}', 'update')->name('update');
+        Route::delete('/{city}', 'destroy')->name('destroy');
+    }
+);
