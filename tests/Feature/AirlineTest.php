@@ -89,6 +89,28 @@ class AirlineTest extends TestCase
         ->first();
     }
 
+    private function createFlightsForAirline(
+        Airline $airline,
+        ?int $departureCityId = null,
+        ?int $destinationCityId = null,
+        ?int $count = null
+    ): Flight|Collection {
+        $attributes = [];
+
+        if ($departureCityId) {
+            $attributes['departure_city_id'] = $departureCityId;
+        }
+
+        if ($destinationCityId) {
+            $attributes['destination_city_id'] = $destinationCityId;
+        }
+
+        return Flight::factory()
+        ->count($count)
+        ->for($airline)
+        ->create($attributes);
+    }
+
     public function test_index_route_renders_view_with_airlines_and_cities_data(): void
     {
         $response = $this->get(route('airlines.index'));
@@ -155,28 +177,6 @@ class AirlineTest extends TestCase
                     return !count($diff);
                 }
             ]);
-    }
-
-    private function createFlightsForAirline(
-        Airline $airline,
-        ?int $departureCityId = null,
-        ?int $destinationCityId = null,
-        ?int $count = null
-    ): Flight|Collection {
-        $attributes = [];
-
-        if ($departureCityId) {
-            $attributes['departure_city_id'] = $departureCityId;
-        }
-
-        if ($destinationCityId) {
-            $attributes['destination_city_id'] = $destinationCityId;
-        }
-
-        return Flight::factory()
-        ->count($count)
-        ->for($airline)
-        ->create($attributes);
     }
 
     public function test_index_route_filtered_by_destination_city_returns_view_with_cities_and_one_airline(): void
