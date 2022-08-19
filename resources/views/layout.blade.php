@@ -18,6 +18,7 @@
         'resources/css/app.css',
         'resources/css/header.css',
     ])
+    {{ vite_assets() }}
     @yield('styles')
     <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.2/dist/flowbite.min.css" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -160,6 +161,8 @@
             setInputValue
         });
     </script>
+
+    @vite('resources/js/app.js') 
 
     @yield('scripts')
 </body>
