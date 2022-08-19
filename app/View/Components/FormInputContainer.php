@@ -9,7 +9,8 @@ class FormInputContainer extends Component
 {
     public string $compoundId;
 
-    public function __construct(string $forForm, string $forInput) {
+    public function __construct(string $forForm, string $forInput)
+    {
         $this->compoundId = "{$forForm}-{$forInput}";
     }
 
