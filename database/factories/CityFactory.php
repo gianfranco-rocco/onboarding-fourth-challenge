@@ -9,7 +9,7 @@ class CityFactory extends Factory
     public function definition()
     {
         return [
-            'name' => $this->faker->city()
+            'name' => $this->faker->unique()->city()
         ];
     }
 }
