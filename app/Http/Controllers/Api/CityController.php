@@ -7,8 +7,10 @@ use App\Http\Requests\DestroyCityRequest;
 use App\Http\Requests\StoreCityRequest;
 use App\Http\Requests\UpdateCityRequest;
 use App\Http\Resources\ShowCityResource;
+use App\Models\Airline;
 use App\Models\City;
 use App\Services\CityService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 
@@ -17,6 +19,11 @@ class CityController extends Controller
     public function index(CityService $cityService): JsonResponse
     {
         return response()->json($cityService->get());
+    }
+    
+    public function getAirlineCities(Airline $airline): Collection
+    {
+        return $airline->cities;
     }
 
     public function store(StoreCityRequest $request): JsonResponse

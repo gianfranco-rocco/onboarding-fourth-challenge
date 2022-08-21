@@ -1,13 +1,17 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useAPI from "./useAPI";
+
 
 const useFlights = () => {
-    const API_URL = 'http://localhost:80/api/flights';
+    const {
+        FLIGHTS_API_URI
+    } = useAPI();
 
     const [flights, setFlights] = useState([]);
     const [paginator, setPaginator] = useState({});
     const [error, setError] = useState('');
-    const [formErrors, setFormErrors] = useState([]);
+    const [formErrors, setFormErrors] = useState({});
     const [params, setParams] = useState({
         departureAt: null,
         arrivalAt: null,
@@ -16,9 +20,18 @@ const useFlights = () => {
         destinationCity: null,
         cursor: null
     });
+    const [flightData, setFlightData] = useState({
+        airline: '',
+        departure_city: '',
+        destination_city: '',
+        departure_at_date: '',
+        departure_at_time: '',
+        arrival_at_date: '',
+        arrival_at_time: ''
+    });
 
     const getFlights = async () => {
-        await axios.get(API_URL, {
+        await axios.get(FLIGHTS_API_URI, {
             params
         })
         .then(response => {
@@ -27,6 +40,28 @@ const useFlights = () => {
         })
         .catch(response => {
             setError(response.response.data.message);
+        });
+    }
+
+    const hasFormErrors = (key) => {
+        return getFormErrors(key).length > 0;
+    }
+
+    const getFormErrors = (key) => {
+        return formErrors[key] || [];
+    }
+
+    const saveFlight = async (setShowModal) => {
+        await axios.post(FLIGHTS_API_URI, flightData)
+        .then(response => {
+            getFlights();
+
+            if (setShowModal) {
+                setShowModal(show => (!show));
+            }
+        })
+        .catch(response => {
+            setFormErrors(response.response.data.errors);
         });
     }
 
@@ -58,9 +93,14 @@ const useFlights = () => {
         flights,
         paginator,
         getFlights,
+        saveFlight,
         params,
         setParams,
-        handlePagination
+        handlePagination,
+        flightData,
+        setFlightData,
+        getFormErrors,
+        hasFormErrors
     }
 }
 

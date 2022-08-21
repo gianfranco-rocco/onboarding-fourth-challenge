@@ -20,6 +20,7 @@ Route::controller(ApiCityController::class)
     ->prefix('cities')
     ->name('cities.')
     ->group(function () {
+        Route::get('/{airline}/cities', 'getAirlineCities')->name('api.airline-cities');
         Route::get('/', 'index')->name('api.index');
         Route::post('/', 'store')->name('store');
         Route::get('/{city}', 'show')->name('show');

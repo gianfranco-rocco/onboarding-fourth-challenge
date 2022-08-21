@@ -29,8 +29,16 @@ class FlightController extends Controller
 
     public function store(StoreFlightRequest $request): JsonResponse
     {
+        $flight = Flight::create([
+            'airline_id' => $request->airline,
+            'departure_city_id' => $request->departure_city,
+            'destination_city_id' => $request->destination_city,
+            'departure_at' => $request->departure_at,
+            'arrival_at' => $request->arrival_at,
+        ]);
+
         return response()->json([
-            'message' => "Created flight 'ID {id}' successfully."
+            'message' => "Created flight 'ID {$flight->id}' successfully."
         ]);
     }
 
