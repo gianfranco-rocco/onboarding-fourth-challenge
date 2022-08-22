@@ -9,15 +9,16 @@ use App\Http\Requests\UpdateAirlineRequest;
 use App\Http\Resources\ShowAirlineResource;
 use App\Models\Airline;
 use App\Services\AirlineService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Response;
 
 class AirlineController extends Controller
 {
-    public function index(AirlineService $airlineService): JsonResponse
+    public function index(AirlineService $airlineService): Collection
     {
-        return response()->json($airlineService->get());
+        return $airlineService->get();
     }
 
     public function store(StoreAirlineRequest $request): JsonResponse
