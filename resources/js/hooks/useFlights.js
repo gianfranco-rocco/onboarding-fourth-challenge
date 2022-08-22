@@ -22,7 +22,7 @@ const useFlights = () => {
     const [params, setParams] = useState({
         departure_at: '',
         arrival_at: '',
-        airline: null,
+        airline: '',
         departure_city: '',
         destination_city: '',
         cursor: null
