@@ -103,6 +103,23 @@ const useFlights = () => {
         });
     }
 
+    const deleteFlight = async (setShowDeleteModal) => {
+        await axios
+        .delete(`${FLIGHTS_API_URI}/${flightData.id}`)
+        .then(({data}) => {
+            getFlights();
+
+            if (setShowDeleteModal) {
+                setShowDeleteModal(show => (!show));
+            }
+
+            renderToast(data.message, SUCCESS_TOAST);
+        })
+        .catch(response => {
+            renderToast(response.response.data.message, ERROR_TOAST);
+        });
+    }
+
     const hasFormErrors = (key) => {
         return getFormErrors(key).length > 0;
     }
@@ -137,6 +154,7 @@ const useFlights = () => {
         saveFlight,
         getFlight,
         updateFlight,
+        deleteFlight,
         params,
         setParams,
         handlePagination,

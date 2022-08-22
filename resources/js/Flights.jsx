@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client'
 import Table from './components/Table';
 import Paginator from './components/Table/Paginator';
@@ -20,6 +20,9 @@ export default function Flights() {
 
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    const deleteFlightMessageRef = useRef('');
 
     const {
         flights,
@@ -28,6 +31,7 @@ export default function Flights() {
         saveFlight,
         updateFlight,
         getFlight,
+        deleteFlight,
         params,
         handlePagination,
         flightData,
@@ -116,6 +120,14 @@ export default function Flights() {
         }
     }
 
+    const handleFlightDelete = async (flightId) => {
+        setFlightData({id: flightId});
+
+        setShowDeleteModal(true);
+
+        deleteFlightMessageRef.current = `Are you sure you want to delete flight 'ID ${flightId}'?`;
+    }
+
     const getLabelClassNames = (key) => {
         const classNames = 'text-red-700 dark:text-red-500';
 
@@ -182,7 +194,7 @@ export default function Flights() {
                     {
                         flights.length ?
                         flights.map(flight => (
-                            <FlightItem key={flight.id} flight={flight} handleFlightEdit={handleFlightEdit} />
+                            <FlightItem key={flight.id} flight={flight} handleFlightEdit={handleFlightEdit} handleFlightDelete={handleFlightDelete} />
                         )) :
                         <tr>
                             <td colSpan={7} className='text-center'>No flights available</td>
@@ -441,6 +453,17 @@ export default function Flights() {
                         { getFormErrors('arrival_at_time').map(error => <Error key={error}>{error}</Error>) }
                     </InputContainer>
                 </form>
+            </Modal>
+
+            {/* Delete modal */}
+            <Modal
+                title="Delete flight"
+                submitBtnLabel="Delete"
+                submitBtnOnclick={() => deleteFlight(setShowDeleteModal)}
+                closeBtnOnclick={() => setShowDeleteModal(show => (!show))}
+                show={showDeleteModal}
+            >
+                <p>{deleteFlightMessageRef.current}</p>
             </Modal>
         </>
     );

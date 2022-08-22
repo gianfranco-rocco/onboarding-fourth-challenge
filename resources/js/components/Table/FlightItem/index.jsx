@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "../../Button";
 
-export default function FlightItem({ flight, handleFlightEdit }) {
+export default function FlightItem({ flight, handleFlightEdit, handleFlightDelete }) {
     const {id, airline, departure_city, departure_at, destination_city, arrival_at} = flight;
 
     const now = new Date();
@@ -23,8 +23,8 @@ export default function FlightItem({ flight, handleFlightEdit }) {
             <td>{ destination_city.name }</td>
             <td>{ formattedArrivalAt.toLocaleString() }</td>
             <td>
-                <Button onClick={() => handleFlightEdit(id)} disabled={disabled} >Edit</Button>
-                <Button>Delete</Button>
+                <Button onClick={() => handleFlightEdit(id)} disabled={disabled}>Edit</Button>
+                <Button onClick={() => handleFlightDelete(id)}>Delete</Button>
             </td>
         </tr>
     );
