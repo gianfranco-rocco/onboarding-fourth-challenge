@@ -50,14 +50,6 @@ const useFlights = () => {
         });
     }
 
-    const hasFormErrors = (key) => {
-        return getFormErrors(key).length > 0;
-    }
-
-    const getFormErrors = (key) => {
-        return formErrors[key] || [];
-    }
-
     const saveFlight = async (setShowModal) => {
         await axios.post(FLIGHTS_API_URI, flightData)
         .then(response => {
@@ -76,6 +68,14 @@ const useFlights = () => {
                 renderToast(response.data.message, ERROR_TOAST);
             }
         });
+    }
+
+    const hasFormErrors = (key) => {
+        return getFormErrors(key).length > 0;
+    }
+
+    const getFormErrors = (key) => {
+        return formErrors[key] || [];
     }
 
     const handlePagination = (paginationType) => {
