@@ -194,20 +194,38 @@ export default function Flights() {
                         />
                     </div>
 
-                    <div className="mb-4">
-                        <label htmlFor='departure-city-filter' className='mr-3'>Filter by departure city</label>
+                    <div className="mb-4 flex">
+                        <div className='mr-5'>
+                            <label htmlFor='departure-city-filter' className='mr-3'>Filter by departure city</label>
 
-                        <Dropdown
-                            id="departure-city-filter"
-                            name="departure_city"
-                            onChange={handleFiltering}
-                            classNames='hover:text-white dark:hover:bg-blue-700 w-fit'
-                            options={cities}
-                            value={params.departure_city}
-                            noOptionsLabel="No departure cities available"
-                            defaultOptionDisabled={false}
-                        />
+                            <Dropdown
+                                id="departure-city-filter"
+                                name="departure_city"
+                                onChange={handleFiltering}
+                                classNames='hover:text-white dark:hover:bg-blue-700 w-fit'
+                                options={cities}
+                                value={params.departure_city}
+                                noOptionsLabel="No departure cities available"
+                                defaultOptionDisabled={false}
+                            />
+                        </div>
+                        
+                        <div>
+                            <label htmlFor='destination-city-filter' className='mr-3'>Filter by destination city</label>
+
+                            <Dropdown
+                                id="destination-city-filter"
+                                name="destination_city"
+                                onChange={handleFiltering}
+                                classNames='hover:text-white dark:hover:bg-blue-700 w-fit'
+                                options={cities}
+                                value={params.destination_city}
+                                noOptionsLabel="No destination cities available"
+                                defaultOptionDisabled={false}
+                            />
+                        </div>
                     </div>
+
                 </div>
             </div>
 

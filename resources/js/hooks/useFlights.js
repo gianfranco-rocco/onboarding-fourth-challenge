@@ -24,7 +24,7 @@ const useFlights = () => {
         arrivalAt: null,
         airline: null,
         departure_city: '',
-        destinationCity: null,
+        destination_city: '',
         cursor: null
     });
     const [flightData, setFlightData] = useState({
