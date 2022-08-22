@@ -39,7 +39,8 @@ export default function Flights() {
         getFormErrors,
         hasFormErrors,
         setFormErrors,
-        removeFormErrors
+        removeFormErrors,
+        handleFiltering
     } = useFlights();
 
     const {
@@ -175,6 +176,23 @@ export default function Flights() {
             <div className="flex justify-between mb-4">
                 <div className="flex items-center">
                     <Button onClick={() => setShowCreateModal(currValue => (!currValue))} classNames='mb-4 hover:bg-blue-700'>New flight</Button>
+                </div>
+            </div>
+
+            <div className="flex flex-col items-end">
+                <div className="mb-4">
+                    <label htmlFor='airline-filter' className='mr-3'>Filter by airline</label>
+
+                    <Dropdown
+                        id="airline-filter"
+                        name="airline"
+                        onChange={handleFiltering}
+                        classNames='hover:text-white dark:hover:bg-blue-700 w-fit'
+                        options={airlines}
+                        value={params.airline}
+                        noOptionsLabel="No airlines available"
+                        defaultOptionDisabled={false}
+                    />
                 </div>
             </div>
 

@@ -120,6 +120,13 @@ const useFlights = () => {
         });
     }
 
+    const handleFiltering = (e) => {
+        setParams(currParams => ({
+            ...currParams,
+            [e.target.name]: e.target.value
+        }));
+    }
+
     const hasFormErrors = (key) => {
         return getFormErrors(key).length > 0;
     }
@@ -163,7 +170,8 @@ const useFlights = () => {
         getFormErrors,
         hasFormErrors,
         setFormErrors,
-        removeFormErrors
+        removeFormErrors,
+        handleFiltering
     }
 }
 

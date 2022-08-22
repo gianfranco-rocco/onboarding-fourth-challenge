@@ -10,7 +10,8 @@ export default function Dropdown({
     defaultOptionLabel = 'Choose',
     options = [],
     disabled = false,
-    withDefaultOption = true
+    withDefaultOption = true,
+    defaultOptionDisabled = true
 }) {
     return (
         <select 
@@ -27,7 +28,7 @@ export default function Dropdown({
                 <option value="" disabled>{noOptionsLabel}</option> 
                 :
                 <>
-                    {withDefaultOption && <option value="" disabled>{defaultOptionLabel}</option>}
+                    {withDefaultOption && <option value="" disabled={defaultOptionDisabled}>{defaultOptionLabel}</option>}
 
                     {
                         options.map(({id, name}) => (
