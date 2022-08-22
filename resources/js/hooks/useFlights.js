@@ -80,18 +80,7 @@ const useFlights = () => {
 
     const handlePagination = (paginationType) => {
         if (Object.keys(paginator).length) {
-            let cursor = null;
-
-            switch(paginationType) {
-                case 'prev':
-                    cursor = paginator.prev_cursor;
-                    break;
-                case 'next':
-                    cursor = paginator.next_cursor;
-                    break;
-                default:
-                    break;
-            }
+            const cursor = paginator[`${paginationType}_cursor`];
 
             if (cursor) {
                 setParams(currParams => ({
