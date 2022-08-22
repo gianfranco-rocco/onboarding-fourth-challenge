@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useAPI from "./useAPI";
 import useReactToastify from "./useReactToastify";
 
@@ -37,6 +37,10 @@ const useFlights = () => {
         arrival_at_date: '',
         arrival_at_time: ''
     });
+
+    useEffect(() => {
+        getFlights()
+    }, [params]);
 
     const getFlights = async () => {
         await axios.get(FLIGHTS_API_URI, {

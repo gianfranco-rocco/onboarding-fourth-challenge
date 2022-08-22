@@ -64,10 +64,6 @@ export default function Flights() {
         getCities();
     }, []);
 
-    useEffect(() => {
-        getFlights();
-    }, [params]);
-
     const clearForm = (setShowModal) => {
         setFlightData({});
         setShowModal(showModal => (!showModal));
