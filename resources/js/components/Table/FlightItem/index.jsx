@@ -23,7 +23,7 @@ export default function FlightItem({ flight, handleFlightEdit, handleFlightDelet
             <td>{ destination_city.name }</td>
             <td>{ formattedArrivalAt.toLocaleString() }</td>
             <td>
-                <Button onClick={() => handleFlightEdit(id)} disabled={disabled}>Edit</Button>
+                <Button onClick={() => handleFlightEdit(id)} disabled={disabled} className='mr-1'>Edit</Button>
                 <Button onClick={() => handleFlightDelete(id)}>Delete</Button>
             </td>
         </tr>
