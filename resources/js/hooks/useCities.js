@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useAPI from "./useAPI";
 
 const useCities = () => {
