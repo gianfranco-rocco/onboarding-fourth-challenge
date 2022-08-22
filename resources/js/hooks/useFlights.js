@@ -23,7 +23,7 @@ const useFlights = () => {
         departureAt: null,
         arrivalAt: null,
         airline: null,
-        departureCity: null,
+        departure_city: '',
         destinationCity: null,
         cursor: null
     });

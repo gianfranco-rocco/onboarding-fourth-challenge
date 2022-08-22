@@ -16,9 +16,9 @@ use Illuminate\Http\Response;
 
 class CityController extends Controller
 {
-    public function index(CityService $cityService): JsonResponse
+    public function index(CityService $cityService): Collection
     {
-        return response()->json($cityService->get());
+        return $cityService->get();
     }
     
     public function getAirlineCities(Airline $airline): Collection
