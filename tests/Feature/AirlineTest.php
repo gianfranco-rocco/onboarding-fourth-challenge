@@ -172,29 +172,32 @@ class AirlineTest extends TestCase
             ]);
     }
 
-    public function test_index_route_filtered_by_destination_city_returns_view_with_cities_and_one_airline(): void
+    public function test_index_route_filtered_by_destination_city_returns_view_with_cities_and_airlines_with_flights_with_filtered_destination_city(): void
     {
         $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
 
-        $flight = $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity);
+        $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity);
 
-        $response = $this->get(route('airlines.index', ['destination_city' => $destinationCity]));
+        $response = $this->get(route('airlines.index', ['destination_city' => $destinationCity->id]));
 
         $response
             ->assertSuccessful()
             ->assertViewIs('airline.index')
             ->assertViewHasAll([
                 'cities' => $this->cityService->get(),
-                'airlines' => function ($airlines) use ($flight) {
-                    return $airlines->count() === 1 
-                        && $flight->airline_id == $airlines[0]->id;
+                'airlines' => function ($airlines) use ($destinationCity) {
+                    return $airlines->every(function ($airline) use ($destinationCity) {
+                        $countFlightsWithDestinationCity = $airline->flights()->where('destination_city_id', $destinationCity->id)->count();
+
+                        return $countFlightsWithDestinationCity > 0;
+                    });
                 }
             ]);
     }
 
-    public function test_index_route_filtered_by_active_flights_returns_view_with_cities_and_one_airline(): void
+    public function test_index_route_filtered_by_active_flights_returns_view_with_cities_and_only_airlines_with_specified_active_flights_amount(): void
     {
         $airline = $this->getAirlineWithCities();
 
@@ -208,40 +211,41 @@ class AirlineTest extends TestCase
             ->assertViewHasAll([
                 'cities' => $this->cityService->get(),
                 'airlines' => function ($airlines) use ($flights) {
-                    return $airlines->count() === 1
-                        && $airlines[0]->active_flights_count === $flights->count();
+                    $flightsCount = $flights->count();
+
+                    return $airlines->every(function ($airline) use ($flightsCount) {
+                        return $flightsCount === $airline->active_flights_count;
+                    });
                 }
             ]);
     }
 
-    public function test_index_route_filtered_by_destination_city_and_active_flights_returns_view_with_cities_and_one_airline(): void
+    public function test_index_route_filtered_by_destination_city_and_active_flights_returns_view_with_cities_and_airlines_corresponding_to_filters(): void
     {
         $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
         
-        $flights = $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity, 3);
+        $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity, 3);
 
         $response = $this->get(route('airlines.index', [
             'destination_city' => $destinationCity->id,
-            'active_flights' => $flights->count()
+            'active_flights' => $airline->activeFlights()->count()
         ]));
 
         $response
-        ->assertSuccessful()
-        ->assertViewIs('airline.index')
-        ->assertViewHasAll([
-            'cities' => $this->cityService->get(),
-            'airlines' => function ($airlines) use ($destinationCity, $flights) {
-                $flightsHaveSameDestinationCity = $flights->every(function ($flight) use ($destinationCity) {
-                    return $flight->destination_city_id === $destinationCity->id;
-                });
+            ->assertSuccessful()
+            ->assertViewIs('airline.index')
+            ->assertViewHasAll([
+                'cities' => $this->cityService->get(),
+                'airlines' => function ($airlines) use ($destinationCity) {
+                    return $airlines->every(function ($airline) use ($destinationCity) {
+                        $countActiveFlightsWithDestinationCity = $airline->activeFlights()->where('destination_city_id', $destinationCity->id)->count();
 
-                return $airlines->count() === 1
-                    && $airlines[0]->active_flights_count === $flights->count()
-                    && $flightsHaveSameDestinationCity;
-            }
-        ]);
+                        return $countActiveFlightsWithDestinationCity > 0;
+                    });
+                }
+            ]);
     }
 
     public function test_store_api_creates_airline(): void
@@ -581,7 +585,7 @@ class AirlineTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'confirmation' => "The airline is assigned to <strong>{$flights->count()} flight(s)</strong>, this action will delete the airline as well as every flight assigned to it."
+                'confirmation' => "The airline is assigned to <strong>{$airline->flights()->count()} flight(s)</strong>, this action will delete the airline as well as every flight assigned to it."
             ]);
 
         $this->assertNotSoftDeleted($airline);
