@@ -1,16 +1,23 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import useAPI from "./useAPI";
-
+import useReactToastify from "./useReactToastify";
 
 const useFlights = () => {
+    const HTTP_UNPROCESSABLE = 422;
+
     const {
         FLIGHTS_API_URI
     } = useAPI();
 
+    const {
+        SUCCESS_TOAST,
+        ERROR_TOAST,
+        renderToast
+    } = useReactToastify();
+
     const [flights, setFlights] = useState([]);
     const [paginator, setPaginator] = useState({});
-    const [error, setError] = useState('');
     const [formErrors, setFormErrors] = useState({});
     const [params, setParams] = useState({
         departureAt: null,
@@ -39,7 +46,7 @@ const useFlights = () => {
             setFlights(response.data.data);
         })
         .catch(response => {
-            setError(response.response.data.message);
+            renderToast(response.response.data.message, ERROR_TOAST);
         });
     }
 
@@ -59,9 +66,15 @@ const useFlights = () => {
             if (setShowModal) {
                 setShowModal(show => (!show));
             }
+
+            renderToast(response.data.message, SUCCESS_TOAST);
         })
-        .catch(response => {
-            setFormErrors(response.response.data.errors);
+        .catch(({response}) => {
+            if (response.status === HTTP_UNPROCESSABLE) {
+                setFormErrors(response.data.errors);
+            } else {
+                renderToast(response.data.message, ERROR_TOAST);
+            }
         });
     }
 

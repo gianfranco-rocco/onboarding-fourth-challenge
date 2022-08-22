@@ -13,6 +13,7 @@ import useAirlines from './hooks/useAirlines';
 import Dropdown from './components/Dropdown';
 import useCities from './hooks/useCities';
 import Error from './components/Form/Error';
+import { ToastContainer } from 'react-toastify';
 
 export default function Flights() {
     const fieldErrorClasses = 'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400';
@@ -108,6 +109,8 @@ export default function Flights() {
 
     return(
         <>
+            <ToastContainer />
+
             <div className="flex justify-between mb-4">
                 <div className="flex items-center">
                     <Button onClick={() => setShowCreateModal(currValue => (!currValue))} classNames='mb-4 hover:bg-blue-700'>New flight</Button>
