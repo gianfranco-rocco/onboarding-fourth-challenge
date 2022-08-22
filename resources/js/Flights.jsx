@@ -222,6 +222,31 @@ export default function Flights() {
                         </div>
                     </div>
 
+                    <div className="mb-4 flex">
+                        <div className='mr-5'>
+                            <label htmlFor='departure-at-filter' className='mr-3'>Filter by departure date</label>
+
+                            <Input
+                                id='departure-at-filter'
+                                onChange={handleFiltering}
+                                type="date"
+                                value={params.departure_at}
+                                name="departure_at"
+                            />
+                        </div>
+                        
+                        <div>
+                            <label htmlFor='arrival-at-filter' className='mr-3'>Filter by arrival date</label>
+
+                            <Input
+                                id='arrival-at-filter'
+                                onChange={handleFiltering}
+                                type="date"
+                                value={params.arrival_at}
+                                name="arrival_at"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
 

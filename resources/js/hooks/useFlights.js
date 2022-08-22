@@ -20,8 +20,8 @@ const useFlights = () => {
     const [paginator, setPaginator] = useState({});
     const [formErrors, setFormErrors] = useState({});
     const [params, setParams] = useState({
-        departureAt: null,
-        arrivalAt: null,
+        departure_at: '',
+        arrival_at: '',
         airline: null,
         departure_city: '',
         destination_city: '',

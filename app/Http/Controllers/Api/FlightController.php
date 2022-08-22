@@ -3,18 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\IndexFlightRequest;
 use App\Http\Requests\StoreAndUpdateFlightRequest;
 use App\Http\Resources\ShowFlightResource;
 use App\Models\Flight;
 use App\Services\FlightService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Pagination\CursorPaginator;
 
 class FlightController extends Controller
 {
-    public function index(IndexFlightRequest $request, FlightService $flightService): CursorPaginator
+    public function index(Request $request, FlightService $flightService): CursorPaginator
     {
         return $flightService->getCursorPaginated(
             10, 

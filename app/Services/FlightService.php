@@ -3,15 +3,14 @@
 namespace App\Services;
 
 use App\Models\Flight;
-use Carbon\Carbon;
 use Illuminate\Pagination\CursorPaginator;
 
 class FlightService
 {
     public function getCursorPaginated(
         int $total = 10,
-        ?Carbon $departureAt = null,
-        ?Carbon $arrivalAt = null,
+        ?string $departureAt = null,
+        ?string $arrivalAt = null,
         ?int $airline = null,
         ?int $departureCity = 0,
         ?int $destinationCity = 0
