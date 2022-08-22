@@ -1,11 +1,17 @@
 import axios from "axios";
 import { useState } from "react";
 import useAPI from "./useAPI";
+import useReactToastify from "./useReactToastify";
 
 const useCities = () => {
     const {
         CITIES_API_URI
     } = useAPI();
+
+    const {
+        ERROR_TOAST,
+        renderToast
+    } = useReactToastify();
 
     const [cities, setCities] = useState([]);
     const [departureCities, setDepartureCities] = useState([]);
@@ -17,8 +23,8 @@ const useCities = () => {
             .then(response => {
                 setCities(response.data);
             })
-            .catch(response => {
-                console.log('cities response error', response);
+            .catch(({response: {data}}) => {
+                renderToast(data.message, ERROR_TOAST);
             });
     }
 
@@ -32,8 +38,8 @@ const useCities = () => {
             .then(response => {
                 setDepartureCities(response.data)
             })
-            .catch(response => {
-                console.log('departure cities response error', response);
+            .catch(({response: {data}}) => {
+                renderToast(data.message, ERROR_TOAST);
             });
     }
     
