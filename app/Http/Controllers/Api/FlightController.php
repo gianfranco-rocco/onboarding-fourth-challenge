@@ -4,8 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\InvokeFlightRequest;
-use App\Http\Requests\StoreFlightRequest;
-use App\Http\Requests\UpdateFlightRequest;
+use App\Http\Requests\StoreAndUpdateFlightRequest;
 use App\Http\Resources\ShowFlightResource;
 use App\Models\Flight;
 use App\Services\FlightService;
@@ -27,7 +26,7 @@ class FlightController extends Controller
         );
     }
 
-    public function store(StoreFlightRequest $request): JsonResponse
+    public function store(StoreAndUpdateFlightRequest $request): JsonResponse
     {
         $flight = Flight::create([
             'airline_id' => $request->airline,
@@ -47,7 +46,7 @@ class FlightController extends Controller
         return ShowFlightResource::make($flight);
     }
 
-    public function update(UpdateFlightRequest $request, Flight $flight): JsonResponse
+    public function update(StoreAndUpdateFlightRequest $request, Flight $flight): JsonResponse
     {
         $flight->update([
             'airline_id' => $request->airline,

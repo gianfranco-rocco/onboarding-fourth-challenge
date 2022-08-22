@@ -69,7 +69,7 @@ export default function Flights() {
         setFormErrors({});
     }
 
-    const handleFormDataChange = (e, customErrorsKey) => {
+    const handleFormDataChange = (e) => {
         const key = e.target.name;
 
         setFlightData(data => ({
@@ -77,9 +77,7 @@ export default function Flights() {
             [key]: e.target.value
         }));
 
-        console.log('custom key', customErrorsKey)
-
-        removeFormErrors(customErrorsKey || key);
+        removeFormErrors(key);
     }
 
     const handleAirlineChange = async (e) => {
@@ -119,7 +117,29 @@ export default function Flights() {
     }
 
     const getLabelClassNames = (key) => {
-        return hasFormErrors(key) ? 'text-red-700 dark:text-red-500' : '';
+        const classNames = 'text-red-700 dark:text-red-500';
+
+        /**
+         * If a single key if passed to the function, then we check
+         * if there is a form error related to that key.
+         * If an object, more specifically an array, is passed to the function,
+         * we check of any of the passed keys has a form error related to it. If
+         * any of them do, the class names are returned.
+         * 
+         * This is useful for when one label corresponds to 2 or more different fields
+         * and you want to append the error class names to the label if either of those
+         * fields' got a form error.
+         */
+        switch(typeof(key)) {
+            case 'string':
+                return hasFormErrors(key) && classNames;
+            case 'object':
+                const keysWithFormErrors = key.filter(k => hasFormErrors(k));
+
+                return keysWithFormErrors.length && classNames;
+            default:
+                return '';
+        }
     }
 
     const getInputClassNames = (key) => {
@@ -241,55 +261,59 @@ export default function Flights() {
                     </InputContainer>
 
                     <InputContainer classNames='mb-4'>
-                        <Label htmlFor="departure_at" classNames={getLabelClassNames('departure_at')}>Departure at</Label>
+                        <Label htmlFor="departure_at" classNames={getLabelClassNames(['departure_at', 'departure_at_date', 'departure_at_time'])}>Departure at</Label>
 
                         <div className="flex">
                             <Input
                                 id='departure_at_date'
-                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
+                                onChange={handleFormDataChange}
                                 type="date"
                                 value={flightData.departure_at_date}
                                 name="departure_at_date"
-                                classNames={`flex-1 mr-4 ${getInputClassNames('departure_at')}`}
+                                classNames={`flex-1 mr-4 ${getInputClassNames('departure_at_date')}`}
                             />
 
                             <Input
                                 id='departure_at_time'
-                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
+                                onChange={handleFormDataChange}
                                 type="time"
                                 value={flightData.departure_at_time}
                                 name="departure_at_time"
-                                classNames={getInputClassNames('departure_at')}
+                                classNames={getInputClassNames('departure_at_time')}
                             />
                         </div>
 
                         { getFormErrors('departure_at').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('departure_at_date').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('departure_at_time').map(error => <Error key={error}>{error}</Error>) }
                     </InputContainer>
 
                     <InputContainer>
-                        <Label htmlFor="arrival_at" classNames={getLabelClassNames('arrival_at')}>Arrival at</Label>
+                        <Label htmlFor="arrival_at" classNames={getLabelClassNames(['arrival_at', 'arrival_at_date', 'arrival_at_time'])}>Arrival at</Label>
 
                         <div className="flex">
                             <Input
                                 id='arrival_at_date'
-                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
+                                onChange={handleFormDataChange}
                                 type="date"
                                 value={flightData.arrival_at_date}
                                 name="arrival_at_date"
-                                classNames={`flex-1 mr-4 ${getInputClassNames('arrival_at')}`}
+                                classNames={`flex-1 mr-4 ${getInputClassNames('arrival_at_date')}`}
                             />
 
                             <Input
                                 id='arrival_at_time'
-                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
+                                onChange={handleFormDataChange}
                                 type="time"
                                 value={flightData.arrival_at_time}
                                 name="arrival_at_time"
-                                classNames={getInputClassNames('arrival_at')}
+                                classNames={getInputClassNames('arrival_at_time')}
                             />
                         </div>
 
                         { getFormErrors('arrival_at').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('arrival_at_date').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('arrival_at_time').map(error => <Error key={error}>{error}</Error>) }
                     </InputContainer>
                 </form>
             </Modal>
@@ -362,55 +386,59 @@ export default function Flights() {
                     </InputContainer>
 
                     <InputContainer classNames='mb-4'>
-                        <Label htmlFor="departure_at" classNames={getLabelClassNames('departure_at')}>Departure at</Label>
+                        <Label htmlFor="departure_at" classNames={getLabelClassNames(['departure_at ', 'departure_at_date', 'departure_at_time'])}>Departure at</Label>
 
                         <div className="flex">
                             <Input
                                 id='departure_at_date'
-                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
+                                onChange={handleFormDataChange}
                                 type="date"
                                 value={flightData.departure_at_date}
                                 name="departure_at_date"
-                                classNames={`flex-1 mr-4 ${getInputClassNames('departure_at')}`}
+                                classNames={`flex-1 mr-4 ${getInputClassNames('departure_at_date')}`}
                             />
 
                             <Input
                                 id='departure_at_time'
-                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
+                                onChange={handleFormDataChange}
                                 type="time"
                                 value={flightData.departure_at_time}
                                 name="departure_at_time"
-                                classNames={getInputClassNames('departure_at')}
+                                classNames={getInputClassNames('departure_at_time')}
                             />
                         </div>
 
                         { getFormErrors('departure_at').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('departure_at_date').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('departure_at_time').map(error => <Error key={error}>{error}</Error>) }
                     </InputContainer>
 
                     <InputContainer>
-                        <Label htmlFor="arrival_at" classNames={getLabelClassNames('arrival_at')}>Arrival at</Label>
+                        <Label htmlFor="arrival_at" classNames={getLabelClassNames(['arrival_at', 'arrival_at_date', 'arrival_at_time'])}>Arrival at</Label>
 
                         <div className="flex">
                             <Input
                                 id='arrival_at_date'
-                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
+                                onChange={handleFormDataChange}
                                 type="date"
                                 value={flightData.arrival_at_date}
                                 name="arrival_at_date"
-                                classNames={`flex-1 mr-4 ${getInputClassNames('arrival_at')}`}
+                                classNames={`flex-1 mr-4 ${getInputClassNames('arrival_at_date')}`}
                             />
 
                             <Input
                                 id='arrival_at_time'
-                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
+                                onChange={handleFormDataChange}
                                 type="time"
                                 value={flightData.arrival_at_time}
                                 name="arrival_at_time"
-                                classNames={getInputClassNames('arrival_at')}
+                                classNames={getInputClassNames('arrival_at_time')}
                             />
                         </div>
 
                         { getFormErrors('arrival_at').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('arrival_at_date').map(error => <Error key={error}>{error}</Error>) }
+                        { getFormErrors('arrival_at_time').map(error => <Error key={error}>{error}</Error>) }
                     </InputContainer>
                 </form>
             </Modal>
