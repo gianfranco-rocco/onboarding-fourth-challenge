@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\InvokeFlightRequest;
+use App\Http\Requests\IndexFlightRequest;
 use App\Http\Requests\StoreAndUpdateFlightRequest;
 use App\Http\Resources\ShowFlightResource;
 use App\Models\Flight;
@@ -14,7 +14,7 @@ use Illuminate\Pagination\CursorPaginator;
 
 class FlightController extends Controller
 {
-    public function index(InvokeFlightRequest $request, FlightService $flightService): CursorPaginator
+    public function index(IndexFlightRequest $request, FlightService $flightService): CursorPaginator
     {
         return $flightService->getCursorPaginated(
             10, 

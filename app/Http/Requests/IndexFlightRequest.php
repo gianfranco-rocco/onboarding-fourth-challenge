@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Carbon\Carbon;
 use Illuminate\Foundation\Http\FormRequest;
 
-class InvokeFlightRequest extends FormRequest
+class IndexFlightRequest extends FormRequest
 {
     public function authorize(): bool
     {
