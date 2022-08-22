@@ -254,7 +254,7 @@ class AirlineTest extends TestCase
             'cities' => $this->parseCitiesForRequest($cities->pluck('id'))
         ];
 
-        $response = $this->postJson(route('airlines.store'), $data);
+        $response = $this->postJson(route('api.airlines.store'), $data);
 
         $airline = Airline::orderBy('id', 'desc')->first(['id']);
 
@@ -274,7 +274,7 @@ class AirlineTest extends TestCase
             'description' => $this->faker()->text(100)
         ];
 
-        $response = $this->postJson(route('airlines.store'), $data);
+        $response = $this->postJson(route('api.airlines.store'), $data);
 
         $airline = Airline::orderBy('id', 'desc')->first(['id']);
 
@@ -295,7 +295,7 @@ class AirlineTest extends TestCase
             'name' => $this->faker()->name()
         ];
 
-        $response = $this->postJson(route('airlines.store'), $data);
+        $response = $this->postJson(route('api.airlines.store'), $data);
 
         $response
             ->assertUnprocessable()
@@ -310,7 +310,7 @@ class AirlineTest extends TestCase
     {
         $airlinesCountBeforeRequest = Airline::count();
         
-        $response = $this->postJson(route('airlines.store'));
+        $response = $this->postJson(route('api.airlines.store'));
 
         $response
             ->assertUnprocessable()
@@ -335,7 +335,7 @@ class AirlineTest extends TestCase
             'description' => $this->faker()->text(100)
         ];
 
-        $response = $this->postJson(route('airlines.store'), $data);
+        $response = $this->postJson(route('api.airlines.store'), $data);
 
         $response
             ->assertUnprocessable()
@@ -356,7 +356,7 @@ class AirlineTest extends TestCase
             'cities' => $this->parseCitiesForRequest($cities)
         ];
 
-        $response = $this->postJson(route('airlines.store'), $data);
+        $response = $this->postJson(route('api.airlines.store'), $data);
 
         $response
             ->assertUnprocessable()
@@ -372,7 +372,7 @@ class AirlineTest extends TestCase
     {
         $airline = Airline::with('cities')->first();
 
-        $response = $this->getJson(route('airlines.show', $airline));
+        $response = $this->getJson(route('api.airlines.show', $airline));
 
         $response
             ->assertSuccessful()
@@ -381,7 +381,7 @@ class AirlineTest extends TestCase
 
     public function test_show_api_does_not_return_airline_when_invalid_airline_passed_to_route(): void
     {
-        $response = $this->getJson(route('airlines.show', 232323));
+        $response = $this->getJson(route('api.airlines.show', 232323));
 
         $response->assertNotFound();
     }
@@ -400,7 +400,7 @@ class AirlineTest extends TestCase
             'description' => $this->faker()->text()
         ];
 
-        $response = $this->putJson(route('airlines.update', $airline), $newData);
+        $response = $this->putJson(route('api.airlines.update', $airline), $newData);
 
         $response
             ->assertSuccessful()
@@ -421,7 +421,7 @@ class AirlineTest extends TestCase
             'description' => $this->faker()->text()
         ];
 
-        $response = $this->putJson(route('airlines.update', $airlineToUpdate->id), $data);
+        $response = $this->putJson(route('api.airlines.update', $airlineToUpdate->id), $data);
 
         $response
             ->assertUnprocessable()
@@ -448,7 +448,7 @@ class AirlineTest extends TestCase
             'airline_id' => $airline->id
         ]);
 
-        $response = $this->putJson(route('airlines.update', $airline), $data);
+        $response = $this->putJson(route('api.airlines.update', $airline), $data);
 
         $response
             ->assertSuccessful()
@@ -475,7 +475,7 @@ class AirlineTest extends TestCase
             'cities' => $this->parseCitiesForRequest($cities->pluck('id'))
         ];
 
-        $response = $this->putJson(route('airlines.update', $airline), $data);
+        $response = $this->putJson(route('api.airlines.update', $airline), $data);
 
         $response
             ->assertSuccessful()
@@ -500,7 +500,7 @@ class AirlineTest extends TestCase
             'cities' => $this->parseCitiesForRequest($newCities->pluck('id'))
         ];
 
-        $response = $this->putJson(route('airlines.update', $airline), $data);
+        $response = $this->putJson(route('api.airlines.update', $airline), $data);
 
         $response
             ->assertSuccessful()
@@ -517,7 +517,7 @@ class AirlineTest extends TestCase
     {
         $airline = Airline::factory()->create();
 
-        $response = $this->deleteJson(route('airlines.destroy', $airline));
+        $response = $this->deleteJson(route('api.airlines.destroy', $airline));
 
         $response
             ->assertSuccessful()
@@ -530,7 +530,7 @@ class AirlineTest extends TestCase
     {
         $airline = $this->getAirlineWithCities();
 
-        $response = $this->deleteJson(route('airlines.destroy', $airline), [
+        $response = $this->deleteJson(route('api.airlines.destroy', $airline), [
             'confirmation' => true
         ]);
 
@@ -551,7 +551,7 @@ class AirlineTest extends TestCase
 
         $flights = $this->createFlightsForAirline($airline, $cities[0], $cities[1], 4);
 
-        $response = $this->deleteJson(route('airlines.destroy', $airline), [
+        $response = $this->deleteJson(route('api.airlines.destroy', $airline), [
             'confirmation' => true
         ]);
 
@@ -576,7 +576,7 @@ class AirlineTest extends TestCase
 
         $flights = $this->createFlightsForAirline($airline, $cities[0], $cities[1], 4);
 
-        $response = $this->deleteJson(route('airlines.destroy', $airline));
+        $response = $this->deleteJson(route('api.airlines.destroy', $airline));
 
         $response
             ->assertUnprocessable()

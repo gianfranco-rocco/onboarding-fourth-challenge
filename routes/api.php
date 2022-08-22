@@ -20,8 +20,8 @@ Route::controller(ApiCityController::class)
     ->prefix('cities')
     ->name('cities.')
     ->group(function () {
-        Route::get('/{airline}/cities', 'getAirlineCities')->name('api.airline-cities');
-        Route::get('/', 'index')->name('api.index');
+        Route::get('/{airline}/cities', 'getAirlineCities')->name('airline-cities');
+        Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
         Route::get('/{city}', 'show')->name('show');
         Route::put('/{city}', 'update')->name('update');
@@ -33,7 +33,7 @@ Route::controller(ApiAirlineController::class)
     ->prefix('airlines')
     ->name('airlines.')
     ->group(function () {
-        Route::get('/', 'index')->name('api.index');
+        Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
         Route::get('/{airline}', 'show')->name('show');
         Route::put('/{airline}', 'update')->name('update');
@@ -43,7 +43,7 @@ Route::controller(ApiAirlineController::class)
 
 Route::controller(ApiFlightController::class)
     ->prefix('flights')
-    ->name('flights.api.')
+    ->name('flights.')
     ->group(function () {
         Route::get('/', 'index')->name('index');
         Route::post('/', 'store')->name('store');
