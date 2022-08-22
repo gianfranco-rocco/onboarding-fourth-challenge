@@ -111,6 +111,12 @@ const useFlights = () => {
         return formErrors[key] || [];
     }
 
+    const removeFormErrors = (key) => {
+        if (hasFormErrors(key)) {
+            delete formErrors[key];
+        }
+    }
+
     const handlePagination = (paginationType) => {
         if (Object.keys(paginator).length) {
             const cursor = paginator[`${paginationType}_cursor`];
@@ -138,7 +144,8 @@ const useFlights = () => {
         setFlightData,
         getFormErrors,
         hasFormErrors,
-        setFormErrors
+        setFormErrors,
+        removeFormErrors
     }
 }
 

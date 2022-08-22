@@ -34,7 +34,8 @@ export default function Flights() {
         setFlightData,
         getFormErrors,
         hasFormErrors,
-        setFormErrors
+        setFormErrors,
+        removeFormErrors
     } = useFlights();
 
     const {
@@ -68,11 +69,17 @@ export default function Flights() {
         setFormErrors({});
     }
 
-    const handleFormDataChange = (e) => {
+    const handleFormDataChange = (e, customErrorsKey) => {
+        const key = e.target.name;
+
         setFlightData(data => ({
             ...data,
-            [e.target.name]: e.target.value
+            [key]: e.target.value
         }));
+
+        console.log('custom key', customErrorsKey)
+
+        removeFormErrors(customErrorsKey || key);
     }
 
     const handleAirlineChange = async (e) => {
@@ -239,7 +246,7 @@ export default function Flights() {
                         <div className="flex">
                             <Input
                                 id='departure_at_date'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
                                 type="date"
                                 value={flightData.departure_at_date}
                                 name="departure_at_date"
@@ -248,7 +255,7 @@ export default function Flights() {
 
                             <Input
                                 id='departure_at_time'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
                                 type="time"
                                 value={flightData.departure_at_time}
                                 name="departure_at_time"
@@ -265,7 +272,7 @@ export default function Flights() {
                         <div className="flex">
                             <Input
                                 id='arrival_at_date'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
                                 type="date"
                                 value={flightData.arrival_at_date}
                                 name="arrival_at_date"
@@ -274,7 +281,7 @@ export default function Flights() {
 
                             <Input
                                 id='arrival_at_time'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
                                 type="time"
                                 value={flightData.arrival_at_time}
                                 name="arrival_at_time"
@@ -360,7 +367,7 @@ export default function Flights() {
                         <div className="flex">
                             <Input
                                 id='departure_at_date'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
                                 type="date"
                                 value={flightData.departure_at_date}
                                 name="departure_at_date"
@@ -369,7 +376,7 @@ export default function Flights() {
 
                             <Input
                                 id='departure_at_time'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'departure_at')}
                                 type="time"
                                 value={flightData.departure_at_time}
                                 name="departure_at_time"
@@ -386,7 +393,7 @@ export default function Flights() {
                         <div className="flex">
                             <Input
                                 id='arrival_at_date'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
                                 type="date"
                                 value={flightData.arrival_at_date}
                                 name="arrival_at_date"
@@ -395,7 +402,7 @@ export default function Flights() {
 
                             <Input
                                 id='arrival_at_time'
-                                onChange={handleFormDataChange}
+                                onChange={(e) => handleFormDataChange(e, 'arrival_at')}
                                 type="time"
                                 value={flightData.arrival_at_time}
                                 name="arrival_at_time"
