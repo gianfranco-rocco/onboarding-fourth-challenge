@@ -28,6 +28,7 @@ const useFlights = () => {
         cursor: null
     });
     const [flightData, setFlightData] = useState({
+        id: '',
         airline: '',
         departure_city: '',
         destination_city: '',
@@ -52,6 +53,38 @@ const useFlights = () => {
 
     const saveFlight = async (setShowModal) => {
         await axios.post(FLIGHTS_API_URI, flightData)
+        .then(response => {
+            getFlights();
+
+            if (setShowModal) {
+                setShowModal(show => (!show));
+            }
+
+            renderToast(response.data.message, SUCCESS_TOAST);
+        })
+        .catch(({response}) => {
+            if (response.status === HTTP_UNPROCESSABLE) {
+                setFormErrors(response.data.errors);
+            } else {
+                renderToast(response.data.message, ERROR_TOAST);
+            }
+        });
+    }
+
+    const getFlight = async (flightId) => {
+        return await axios
+        .get(`${FLIGHTS_API_URI}/${flightId}`)
+        .then(({data}) => {
+            return data.data;
+        })
+        .catch(response => {
+            renderToast(response.response.data.message, ERROR_TOAST);
+        });
+    }
+
+    const updateFlight = async (setShowModal) => {
+        await axios
+        .put(`${FLIGHTS_API_URI}/${flightData.id}`, flightData)
         .then(response => {
             getFlights();
 
@@ -96,13 +129,16 @@ const useFlights = () => {
         paginator,
         getFlights,
         saveFlight,
+        getFlight,
+        updateFlight,
         params,
         setParams,
         handlePagination,
         flightData,
         setFlightData,
         getFormErrors,
-        hasFormErrors
+        hasFormErrors,
+        setFormErrors
     }
 }
 

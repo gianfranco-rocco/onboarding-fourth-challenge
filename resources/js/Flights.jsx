@@ -18,17 +18,23 @@ import { ToastContainer } from 'react-toastify';
 export default function Flights() {
     const fieldErrorClasses = 'bg-red-50 border-red-500 text-red-900 placeholder-red-700 focus:ring-red-500 focus:border-red-500 dark:border-red-400';
 
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+
     const {
         flights,
         paginator,
         getFlights,
         saveFlight,
+        updateFlight,
+        getFlight,
         params,
         handlePagination,
         flightData,
         setFlightData,
         getFormErrors,
-        hasFormErrors
+        hasFormErrors,
+        setFormErrors
     } = useFlights();
 
     const {
@@ -42,10 +48,10 @@ export default function Flights() {
         destinationCities,
         getCities,
         getDepartureCities,
-        getDestinationCities
+        getDestinationCities,
+        setDepartureCities,
+        setDestinationCities
     } = useCities();
-
-    const [showCreateModal, setShowCreateModal] = useState(false);
 
     useEffect(() => {
         getAirlines();
@@ -59,6 +65,7 @@ export default function Flights() {
     const clearForm = (setShowModal) => {
         setFlightData({});
         setShowModal(showModal => (!showModal));
+        setFormErrors({});
     }
 
     const handleFormDataChange = (e) => {
@@ -71,6 +78,7 @@ export default function Flights() {
     const handleAirlineChange = async (e) => {
         handleFormDataChange(e);
         getDepartureCities(e.target.value);
+        setDestinationCities([]);
 
         setFlightData(data => ({
             ...data,
@@ -87,6 +95,20 @@ export default function Flights() {
             ...data,
             destination_city: ''
         }));
+    }
+
+    const handleFlightEdit = async (flightId) => {
+        const flight = await getFlight(flightId);
+
+        if (flight) {
+            setFlightData(flight);
+    
+            setDepartureCities(flight.departure_cities);
+    
+            setDestinationCities(flight.destination_cities);
+
+            setShowEditModal(true);
+        }
     }
 
     const getLabelClassNames = (key) => {
@@ -133,7 +155,7 @@ export default function Flights() {
                     {
                         flights.length ?
                         flights.map(flight => (
-                            <FlightItem key={flight.id} flight={flight} />
+                            <FlightItem key={flight.id} flight={flight} handleFlightEdit={handleFlightEdit} />
                         )) :
                         <tr>
                             <td colSpan={7} className='text-center'>No flights available</td>
@@ -144,6 +166,7 @@ export default function Flights() {
 
             <Paginator paginator={paginator} handlePagination={handlePagination} />
 
+            {/* Create modal */}
             <Modal
                 title="New flight"
                 submitBtnLabel="Save"
@@ -152,6 +175,127 @@ export default function Flights() {
                 show={showCreateModal}
             >
                 <form onSubmit={() => saveFlight(setShowCreateModal)}>
+                    <InputContainer classNames='mb-4'>
+                        <Label htmlFor="airline" classNames={getLabelClassNames('airline')}>Airline</Label>
+
+                        <Dropdown
+                            id="airline"
+                            name="airline"
+                            onChange={handleAirlineChange}
+                            classNames={getDropdownClassNames('airline')}
+                            options={airlines}
+                            value={flightData.airline}
+                            noOptionsLabel="No airlines available"
+                        />
+
+                        { getFormErrors('airline').map(error => <Error key={error}>{error}</Error>) }
+                    </InputContainer>
+
+                    <InputContainer classNames='mb-4'>
+                        <Label htmlFor="departure_city" classNames={getLabelClassNames('departure_city')}>Departure city</Label>
+
+                        <Dropdown
+                            id="departure_city"
+                            name="departure_city"
+                            onChange={handleDepartureCityChange}
+                            classNames={getDropdownClassNames('departure_city')}
+                            options={departureCities}
+                            disabled={!flightData.airline}
+                            value={flightData.departure_city}
+                            noOptionsLabel={
+                                !flightData.airline ? 
+                                'Choose airline' :
+                                'No departure cities available'
+                            }
+                        />
+
+                        { getFormErrors('departure_city').map(error => <Error key={error}>{error}</Error>) }
+                    </InputContainer>
+
+                    <InputContainer classNames='mb-4'>
+                        <Label htmlFor="destination_city" classNames={getLabelClassNames('destination_city')}>Destination city</Label>
+
+                        <Dropdown
+                            id="destination_city"
+                            name="destination_city"
+                            onChange={handleFormDataChange}
+                            classNames={getDropdownClassNames('destination_city')}
+                            options={destinationCities}
+                            disabled={!flightData.departure_city}
+                            value={flightData.destination_city}
+                            noOptionsLabel={
+                                !flightData.departure_city ? 
+                                'Choose departure city' :
+                                'No destination cities available'
+                            }
+                        />
+
+                        { getFormErrors('destination_city').map(error => <Error key={error}>{error}</Error>) }
+                    </InputContainer>
+
+                    <InputContainer classNames='mb-4'>
+                        <Label htmlFor="departure_at" classNames={getLabelClassNames('departure_at')}>Departure at</Label>
+
+                        <div className="flex">
+                            <Input
+                                id='departure_at_date'
+                                onChange={handleFormDataChange}
+                                type="date"
+                                value={flightData.departure_at_date}
+                                name="departure_at_date"
+                                classNames={`flex-1 mr-4 ${getInputClassNames('departure_at')}`}
+                            />
+
+                            <Input
+                                id='departure_at_time'
+                                onChange={handleFormDataChange}
+                                type="time"
+                                value={flightData.departure_at_time}
+                                name="departure_at_time"
+                                classNames={getInputClassNames('departure_at')}
+                            />
+                        </div>
+
+                        { getFormErrors('departure_at').map(error => <Error key={error}>{error}</Error>) }
+                    </InputContainer>
+
+                    <InputContainer>
+                        <Label htmlFor="arrival_at" classNames={getLabelClassNames('arrival_at')}>Arrival at</Label>
+
+                        <div className="flex">
+                            <Input
+                                id='arrival_at_date'
+                                onChange={handleFormDataChange}
+                                type="date"
+                                value={flightData.arrival_at_date}
+                                name="arrival_at_date"
+                                classNames={`flex-1 mr-4 ${getInputClassNames('arrival_at')}`}
+                            />
+
+                            <Input
+                                id='arrival_at_time'
+                                onChange={handleFormDataChange}
+                                type="time"
+                                value={flightData.arrival_at_time}
+                                name="arrival_at_time"
+                                classNames={getInputClassNames('arrival_at')}
+                            />
+                        </div>
+
+                        { getFormErrors('arrival_at').map(error => <Error key={error}>{error}</Error>) }
+                    </InputContainer>
+                </form>
+            </Modal>
+
+            {/* Edit modal */}
+            <Modal
+                title="Edit flight"
+                submitBtnLabel="Update"
+                submitBtnOnclick={() => updateFlight(setShowEditModal)}
+                closeBtnOnclick={() => clearForm(setShowEditModal)}
+                show={showEditModal}
+            >
+                <form onSubmit={() => updateFlight(setShowEditModal)}>
                     <InputContainer classNames='mb-4'>
                         <Label htmlFor="airline" classNames={getLabelClassNames('airline')}>Airline</Label>
 

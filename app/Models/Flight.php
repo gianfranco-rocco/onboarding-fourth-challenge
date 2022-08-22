@@ -20,8 +20,8 @@ class Flight extends Model
     ];
 
     protected $casts = [
-        'departure_at',
-        'arrival_at'
+        'departure_at' => 'datetime',
+        'arrival_at' => 'datetime'
     ];
 
     protected $hidden = [

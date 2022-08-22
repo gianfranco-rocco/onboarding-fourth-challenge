@@ -11,10 +11,6 @@ const useCities = () => {
     const [departureCities, setDepartureCities] = useState([]);
     const [destinationCities, setDestinationCities] = useState([]);
 
-    useEffect(() => {
-        setDestinationCities([]);
-    }, [departureCities]);
-
     const getCities = async () => {
         await axios
             .get(CITIES_API_URI)
@@ -53,8 +49,9 @@ const useCities = () => {
         destinationCities,
         getCities,
         getDepartureCities,
-        setDestinationCities,
         getDestinationCities,
+        setDepartureCities,
+        setDestinationCities,
     };
 }
 
