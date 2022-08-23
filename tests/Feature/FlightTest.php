@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Airline;
+use App\Models\City;
 use App\Models\Flight;
 use App\Services\FlightService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class FlightTest extends TestCase
@@ -66,6 +66,15 @@ class FlightTest extends TestCase
         ->whereHas('cities')
         ->withCount('cities')
         ->havingRaw("cities_count >= {$minCitiesAmount}")
+        ->first();
+    }
+
+    private function getCityNotAssignedToArline(Airline $airline): ?City
+    {
+        return City::whereDoesntHave('airlines')
+        ->orWhereHas('airlines', function ($query) use ($airline) {
+            return $query->where('airline_id', '<>', $airline->id);
+        })
         ->first();
     }
 
@@ -522,13 +531,14 @@ class FlightTest extends TestCase
         $departureAt = CarbonImmutable::now();
         $arrivalAt = $departureAt->addDay();
 
+        $departureCity = $this->getCityNotAssignedToArline($airline);
         $destinationCity = $airline->cities[1];
 
-        $departureCity = DB::table('airline_city')->where('airline_id', '<>', $airline->id)->first();
+        $this->assertNotEmpty($departureCity);
 
         $data = [
             'airline' => $airline->id,
-            'departure_city' => $departureCity->city_id,
+            'departure_city' => $departureCity->id,
             'destination_city' => $destinationCity->id,
             'departure_at_date' => $departureAt->format('Y-m-d'),
             'departure_at_time' => $departureAt->format('H:i'),
@@ -557,13 +567,14 @@ class FlightTest extends TestCase
         $arrivalAt = $departureAt->addDay();
 
         $departureCity = $airline->cities[0];
+        $destinationCity = $this->getCityNotAssignedToArline($airline);
 
-        $destinationCity = DB::table('airline_city')->where('airline_id', '<>', $airline->id)->first();
+        $this->assertNotEmpty($destinationCity);
 
         $data = [
             'airline' => $airline->id,
             'departure_city' => $departureCity->id,
-            'destination_city' => $destinationCity->city_id,
+            'destination_city' => $destinationCity->id,
             'departure_at_date' => $departureAt->format('Y-m-d'),
             'departure_at_time' => $departureAt->format('H:i'),
             'arrival_at_date' => $arrivalAt->format('Y-m-d'),
