@@ -225,7 +225,7 @@ class AirlineTest extends TestCase
         $airline = $this->getAirlineWithCities();
 
         $destinationCity = $airline->cities[1];
-        
+
         $this->createFlightsForAirline($airline, $airline->cities[0], $destinationCity, 3);
 
         $response = $this->get(route('airlines.index', [
@@ -313,7 +313,7 @@ class AirlineTest extends TestCase
     public function test_store_api_does_not_create_airline_without_name_and_description(): void
     {
         $airlinesCountBeforeRequest = Airline::count();
-        
+
         $response = $this->postJson(route('api.airlines.store'));
 
         $response
