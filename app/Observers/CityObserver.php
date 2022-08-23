@@ -19,11 +19,6 @@ class CityObserver
 
     public function deleted(City $city): void
     {
-        $city->incomingFlights()->delete();
-        $city->outgoingFlights()->delete();
-
-        $city->airlines()->detach();
-
         $this->clearFromCache();
     }
 

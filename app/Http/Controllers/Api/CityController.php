@@ -55,6 +55,11 @@ class CityController extends Controller
      */
     public function destroy(DestroyCityRequest $request, City $city): JsonResponse
     {
+        $city->incomingFlights()->delete();
+        $city->outgoingFlights()->delete();
+
+        $city->airlines()->detach();
+
         $city->delete();
 
         return response()->json([
