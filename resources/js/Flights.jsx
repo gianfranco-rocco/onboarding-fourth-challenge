@@ -187,6 +187,7 @@ export default function Flights() {
                             value={params.airline}
                             noOptionsLabel="No airlines available"
                             defaultOptionDisabled={false}
+                            defaultOptionLabel='None'
                         />
                     </div>
 
@@ -203,6 +204,7 @@ export default function Flights() {
                                 value={params.departure_city}
                                 noOptionsLabel="No departure cities available"
                                 defaultOptionDisabled={false}
+                                defaultOptionLabel='None'
                             />
                         </div>
                         
@@ -218,6 +220,7 @@ export default function Flights() {
                                 value={params.destination_city}
                                 noOptionsLabel="No destination cities available"
                                 defaultOptionDisabled={false}
+                                defaultOptionLabel='None'
                             />
                         </div>
                     </div>
