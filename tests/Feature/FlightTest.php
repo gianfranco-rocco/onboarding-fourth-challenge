@@ -184,7 +184,7 @@ class FlightTest extends TestCase
             ->assertJson($flights->toArray());
     }
 
-    public function test_request_to_api_index_route_filtered_by_departure_at_city_returns_flights_matching_the_date(): void
+    public function test_request_to_api_index_route_filtered_by_departure_at_returns_flights_matching_the_date(): void
     {
         $flight = Flight::first();
 
@@ -203,7 +203,7 @@ class FlightTest extends TestCase
             ->assertJson($flights->toArray());
     }
 
-    public function test_request_to_api_index_route_filtered_by_arrival_at_city_returns_flights_matching_the_date(): void
+    public function test_request_to_api_index_route_filtered_by_arrival_at_returns_flights_matching_the_date(): void
     {
         $flight = Flight::first();
 
@@ -222,7 +222,7 @@ class FlightTest extends TestCase
             ->assertJson($flights->toArray());
     }
 
-    public function test_request_to_api_index_route_filtered_by_airline_and_departure_city_and_destination_city_and_departure_at_and_arrival_at_city_returns_flights_matching_the_filters(): void
+    public function test_request_to_api_index_route_filtered_by_airline_and_departure_city_and_destination_city_and_departure_at_and_arrival_at_returns_flights_matching_the_filters(): void
     {
         $flight = Flight::first();
 
