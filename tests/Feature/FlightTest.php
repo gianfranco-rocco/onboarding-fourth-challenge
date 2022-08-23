@@ -7,6 +7,7 @@ use App\Models\Airline;
 use App\Models\City;
 use App\Models\Flight;
 use App\Services\FlightService;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -79,6 +80,43 @@ class FlightTest extends TestCase
         ->first();
     }
 
+    private function getDepartureCityDifferentThanCurrent(Airline $airline, Flight $flight): City
+    {
+        return $airline->cities->first(function ($city) use ($flight) {
+            return $city->id != $flight->departure_city_id;
+        });
+    }
+
+    private function getDestinationCityDifferentThanCurrent(Airline $airline, Flight $flight, ?City $departureCity = null): City
+    {
+        return $airline->cities->first(function ($city) use ($flight, $departureCity) {
+            $passes = $city->id != $flight->destination_city_id;
+
+            if ($departureCity) {
+                $passes = $city->id != $departureCity->id;
+            }
+
+            return $passes;
+        });
+    }
+
+    private function getDepartureAtDifferentThanCurrent(Flight $flight): CarbonImmutable
+    {
+        $now = Carbon::now();
+
+        do {
+            $newDepartureAt = $flight->departure_at->addDays(rand(1, 10));
+        } while($newDepartureAt->eq($now));
+
+
+        return CarbonImmutable::createFromMutable($newDepartureAt);
+    }
+
+    private function getArrivalAtDifferentThanCurrent(CarbonImmutable $departureAt): CarbonImmutable
+    {
+        return $departureAt->addDays(rand(1, 5));
+    }
+
     private function getAirlineRequiredErrorMessage(): string
     {
         return 'The airline field is required.';
@@ -117,6 +155,21 @@ class FlightTest extends TestCase
     private function getAttributeDoesNotMatchFormat(string $attribute, string $format): string
     {
         return "The {$attribute} does not match the format {$format}.";
+    }
+
+    private function getSelectedAttributeInvalidErrorMessage(string $attribute): string
+    {
+        return "The selected {$attribute} is invalid.";
+    }
+
+    private function getAttributesMustBeDifferentErrorMessage(string $attribute1, string $attribute2): string
+    {
+        return "The {$attribute1} and {$attribute2} must be different.";
+    }
+
+    private function getAttributeMustBeADateErrorMessage(string $attribute, string $condition, string $dataComparedAgainst): string
+    {
+        return "The {$attribute} must be a date {$condition} {$dataComparedAgainst}.";
     }
 
     public function test_request_to_index_route_returns_view(): void
@@ -878,5 +931,760 @@ class FlightTest extends TestCase
         $response = $this->getJson(route('api.flights.show', 999999999));
 
         $response->assertNotFound();
+    }
+
+    public function test_request_to_api_update_route_updates_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertSuccessful()
+            ->assertJson([
+                'message' => "Updated flight 'ID {$flight->id}' successfully."
+            ]);
+
+        $this
+            ->assertDatabaseMissing('flights', $flight->toArray())
+            ->assertDatabaseHas('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage()
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_and_departure_city_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage()
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $flight->departure_city_id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_and_departure_city_and_destination_city_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage(),
+                'destination_city' => $this->getDestinationCityRequiredErrorMessage(),
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $flight->departure_city_id,
+                'destination_city_id' => $flight->destination_city_id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_and_departure_city_and_destination_city_and_departure_at_date_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage(),
+                'destination_city' => $this->getDestinationCityRequiredErrorMessage(),
+                'departure_at_date' => $this->getDepartureAtDateRequiredErrorMessage()
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $flight->departure_city_id,
+                'destination_city_id' => $flight->destination_city_id,
+                'departure_at' => $flight->departure_at->format('Y-m-d') . " " . $newDepartureAt->format('H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_and_departure_city_and_destination_city_and_departure_at_date_and_departure_at_time_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage(),
+                'destination_city' => $this->getDestinationCityRequiredErrorMessage(),
+                'departure_at_date' => $this->getDepartureAtDateRequiredErrorMessage(),
+                'departure_at_time' => $this->getDepartureAtTimeRequiredErrorMessage(),
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $flight->departure_city_id,
+                'destination_city_id' => $flight->destination_city_id,
+                'departure_at' => $flight->departure_at,
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_airline_and_departure_city_and_destination_city_and_departure_at_date_and_departure_at_time_and_arrival_at_date_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage(),
+                'destination_city' => $this->getDestinationCityRequiredErrorMessage(),
+                'departure_at_date' => $this->getDepartureAtDateRequiredErrorMessage(),
+                'departure_at_time' => $this->getDepartureAtTimeRequiredErrorMessage(),
+                'arrival_at_date' => $this->getArrivalAtDateRequiredErrorMessage(),
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $flight->airline_id,
+                'departure_city_id' => $flight->departure_city_id,
+                'destination_city_id' => $flight->destination_city_id,
+                'departure_at' => $flight->departure_at,
+                'arrival_at' => $flight->arrival_at->format('Y-m-d') . " " . $newArrivalAt->format('H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_without_data_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $response = $this->putJson(route('api.flights.update', $flight));
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getAirlineRequiredErrorMessage(),
+                'departure_city' => $this->getDepartureCityRequiredErrorMessage(),
+                'destination_city' => $this->getDestinationCityRequiredErrorMessage(),
+                'departure_at_date' => $this->getDepartureAtDateRequiredErrorMessage(),
+                'departure_at_time' => $this->getDepartureAtTimeRequiredErrorMessage(),
+                'arrival_at_date' => $this->getArrivalAtDateRequiredErrorMessage(),
+                'arrival_at_time' => $this->getArrivalAtTimeRequiredErrorMessage(),
+            ]);
+
+        $this->assertDatabaseHas('flights', $flight->toArray());
+    }
+
+    public function test_request_to_api_update_route_with_non_existent_airline_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $invalidAirlineId = 99999999;
+
+        $newData = [
+            'airline' => $invalidAirlineId,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'airline' => $this->getSelectedAttributeInvalidErrorMessage('airline')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $invalidAirlineId,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_departure_city_not_assigned_to_airline_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getCityNotAssignedToArline($newAirline);
+        $newDestinationCity = $newAirline->cities[1];
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $this->assertNotEmpty($newDepartureCity);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'departure_city' => $this->getSelectedAttributeInvalidErrorMessage('departure city')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_destination_city_not_assigned_to_airline_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $newAirline->cities[0];
+        $newDestinationCity = $this->getCityNotAssignedToArline($newAirline);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $this->assertNotEmpty($newDepartureCity);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'destination_city' => $this->getSelectedAttributeInvalidErrorMessage('destination city')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_same_departure_city_as_destination_city_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDepartureCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'departure_city' => $this->getAttributesMustBeDifferentErrorMessage('departure city', 'destination city'),
+                'destination_city' => $this->getAttributesMustBeDifferentErrorMessage('destination city', 'departure city'),
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->airline_id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDepartureCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_departure_at_date_in_wrong_format_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('d/m/Y'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'departure_at_date' => $this->getAttributeDoesNotMatchFormat('departure date', 'Y-m-d')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->airline_id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_departure_at_date_before_today_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = CarbonImmutable::now()->subDay();
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'departure_at_date' => $this->getAttributeMustBeADateErrorMessage('departure date', 'after or equal to', 'today')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->airline_id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_departure_at_time_in_wrong_format_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i:s'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'departure_at_time' => $this->getAttributeDoesNotMatchFormat('departure time', 'H:i')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_arrival_at_date_in_wrong_format_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('d/m/Y'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'arrival_at_date' => $this->getAttributeDoesNotMatchFormat('arrival date', 'Y-m-d')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_arrival_at_date_before_departure_at_date_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $newDepartureAt->subDay();
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'arrival_at_date' => $this->getAttributeMustBeADateErrorMessage('arrival date', 'after or equal to', 'departure date')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_arrival_at_time_in_wrong_format_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+        $newArrivalAt = $this->getArrivalAtDifferentThanCurrent($newDepartureAt);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newArrivalAt->format('Y-m-d'),
+            'arrival_at_time' => $newArrivalAt->format('H:i:s'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'arrival_at_time' => $this->getAttributeDoesNotMatchFormat('arrival time', 'H:i')
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newArrivalAt->format('Y-m-d H:i'),
+            ]);
+    }
+
+    public function test_request_to_api_update_route_with_same_departure_at_and_arrival_at_does_not_update_flight(): void
+    {
+        $flight = Flight::first();
+
+        $newAirline = $this->getAirlineWithCities(7);
+
+        $newDepartureCity = $this->getDepartureCityDifferentThanCurrent($newAirline, $flight);
+        $newDestinationCity = $this->getDestinationCityDifferentThanCurrent($newAirline, $flight, $newDepartureCity);
+
+        $newDepartureAt = $this->getDepartureAtDifferentThanCurrent($flight);
+
+        $newData = [
+            'airline' => $newAirline->id,
+            'departure_city' => $newDepartureCity->id,
+            'destination_city' => $newDestinationCity->id,
+            'departure_at_date' => $newDepartureAt->format('Y-m-d'),
+            'departure_at_time' => $newDepartureAt->format('H:i'),
+            'arrival_at_date' => $newDepartureAt->format('Y-m-d'),
+            'arrival_at_time' => $newDepartureAt->format('H:i'),
+        ];
+
+        $response = $this->putJson(route('api.flights.update', $flight), $newData);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors([
+                'arrival_at_time' => 'The arrival time must be a time after the departure time when both the departure date and arrival date are the same.'
+            ]);
+
+        $this
+            ->assertDatabaseHas('flights', $flight->toArray())
+            ->assertDatabaseMissing('flights', [
+                'id' => $flight->id,
+                'airline_id' => $newAirline->airline_id,
+                'departure_city_id' => $newDepartureCity->id,
+                'destination_city_id' => $newDestinationCity->id,
+                'departure_at' => $newDepartureAt->format('Y-m-d H:i'),
+                'arrival_at' => $newDepartureAt->format('Y-m-d H:i'),
+            ]);
     }
 }
