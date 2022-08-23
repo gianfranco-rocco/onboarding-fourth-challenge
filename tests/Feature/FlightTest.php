@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Airline;
 use App\Models\Flight;
+use App\Services\FlightService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -14,11 +15,15 @@ class FlightTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    private FlightService $flightService;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->seed();
+
+        $this->flightService = new FlightService();
     }
 
     private function getIndexJsonStructure(): array
@@ -130,12 +135,10 @@ class FlightTest extends TestCase
             'airline' => $flight->airline_id
         ]));
 
-        $flights = Flight::where('airline_id', $flight->airline_id)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'airline' => $flight->airline_id
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            airline: $flight->airline_id
+        );
 
         $response
             ->assertSuccessful()
@@ -151,12 +154,10 @@ class FlightTest extends TestCase
             'departure_city' => $flight->departure_city_id
         ]));
 
-        $flights = Flight::where('departure_city_id', $flight->departure_city_id)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'departure_city' => $flight->departure_city_id
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            departureCity: $flight->departure_city_id
+        );
 
         $response
             ->assertSuccessful()
@@ -172,12 +173,10 @@ class FlightTest extends TestCase
             'destination_city' => $flight->destination_city_id
         ]));
 
-        $flights = Flight::where('destination_city_id', $flight->destination_city_id)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'destination_city' => $flight->destination_city_id
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            destinationCity: $flight->destination_city_id
+        );
 
         $response
             ->assertSuccessful()
@@ -193,12 +192,10 @@ class FlightTest extends TestCase
             'departure_at' => $flight->departure_at->format('Y-m-d')
         ]));
 
-        $flights = Flight::whereDate('departure_at', $flight->departure_at)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'departure_at' => $flight->departure_at->format('Y-m-d')
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            departureAt: $flight->departure_at->format('Y-m-d')
+        );
 
         $response
             ->assertSuccessful()
@@ -214,12 +211,10 @@ class FlightTest extends TestCase
             'arrival_at' => $flight->arrival_at->format('Y-m-d')
         ]));
 
-        $flights = Flight::whereDate('arrival_at', $flight->arrival_at)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'arrival_at' => $flight->arrival_at->format('Y-m-d')
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            arrivalAt: $flight->arrival_at->format('Y-m-d')
+        );
 
         $response
             ->assertSuccessful()
@@ -231,28 +226,26 @@ class FlightTest extends TestCase
     {
         $flight = Flight::first();
 
+        $departureAt = $flight->departure_at->format('Y-m-d');
+        $arrivalAt = $flight->arrival_at->format('Y-m-d');
+
         $response = $this->getJson(route('api.flights.index', [
             'airline' => $flight->airline_id,
             'departure_city' => $flight->departure_city_id,
             'destination_city' => $flight->destination_city_id,
-            'departure_at' => $flight->departure_at->format('Y-m-d'),
-            'arrival_at' => $flight->arrival_at->format('Y-m-d')
+            'departure_at' => $departureAt,
+            'arrival_at' => $arrivalAt
         ]));
 
-        $flights = Flight::whereDate('departure_at', $flight->departure_at)
-        ->whereDate('arrival_at', $flight->arrival_at)
-        ->where('airline_id', $flight->airline_id)
-        ->where('departure_city_id', $flight->departure_city_id)
-        ->where('destination_city_id', $flight->destination_city_id)
-        ->orderBy('id', 'desc')
-        ->cursorPaginate(10)
-        ->appends([
-            'airline' => $flight->airline_id,
-            'departure_city' => $flight->departure_city_id,
-            'destination_city' => $flight->destination_city_id,
-            'departure_at' => $flight->departure_at,
-            'arrival_at' => $flight->arrival_at,
-        ]);
+        $flights = $this->flightService
+        ->getCursorPaginated(
+            10,
+            $departureAt,
+            $arrivalAt,
+            $flight->airline_id,
+            $flight->departure_city_id,
+            $flight->destination_city_id
+        );
 
         $response
             ->assertSuccessful()
