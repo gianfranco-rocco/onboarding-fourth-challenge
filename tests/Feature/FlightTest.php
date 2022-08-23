@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Resources\ShowFlightResource;
 use App\Models\Airline;
 use App\Models\City;
 use App\Models\Flight;
@@ -855,5 +856,27 @@ class FlightTest extends TestCase
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
+    }
+
+    public function test_request_to_api_show_route_returns_resource(): void
+    {
+        $flight = Flight::first();
+
+        $flightResource = ShowFlightResource::make($flight);
+
+        $resourceAsArray = $flightResource->toResponse(app('request'))->getData(true);
+
+        $response = $this->getJson(route('api.flights.show', $flight));
+
+        $response
+            ->assertSuccessful()
+            ->assertJson($resourceAsArray);
+    }
+
+    public function test_request_to_api_show_route_with_non_existent_flight_returns_404(): void
+    {
+        $response = $this->getJson(route('api.flights.show', 999999999));
+
+        $response->assertNotFound();
     }
 }
