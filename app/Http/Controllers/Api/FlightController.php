@@ -10,6 +10,7 @@ use App\Services\FlightService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Response;
 use Illuminate\Pagination\CursorPaginator;
 
 class FlightController extends Controller
@@ -38,7 +39,7 @@ class FlightController extends Controller
 
         return response()->json([
             'message' => "Created flight 'ID {$flight->id}' successfully."
-        ]);
+        ], Response::HTTP_CREATED);
     }
 
     public function show(Flight $flight): JsonResource
