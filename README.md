@@ -43,4 +43,4 @@ After configuring an alias, follow these steps to setup the development environm
 
 ## Setting up 3rd-party Services
 
-- [Docker](https://docs.docker.com/get-docker/): Download Docker Desktop to be able to follow [Running](#running) steps.
+- [Docker](https://docs.docker.com/get-docker/): Download Docker Desktop to be able to follow both the [Installation/Setup](#installationsetup) and [Running](#running) steps.
