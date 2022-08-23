@@ -572,7 +572,7 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'airline' => 'The selected airline is invalid.'
+                'airline' => $this->getSelectedAttributeInvalidErrorMessage('airline')
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
@@ -607,7 +607,7 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'departure_city' => 'The selected departure city is invalid.'
+                'departure_city' => $this->getSelectedAttributeInvalidErrorMessage('departure city')
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
@@ -642,7 +642,7 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'destination_city' => 'The selected destination city is invalid.'
+                'destination_city' => $this->getSelectedAttributeInvalidErrorMessage('destination city')
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
@@ -674,8 +674,8 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'departure_city' => 'The departure city and destination city must be different.',
-                'destination_city' => 'The destination city and departure city must be different.',
+                'departure_city' => $this->getAttributesMustBeDifferentErrorMessage('departure city', 'destination city'),
+                'destination_city' => $this->getAttributesMustBeDifferentErrorMessage('destination city', 'departure city'),
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
@@ -741,7 +741,7 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'departure_at_date' => 'The departure date must be a date after or equal to today.'
+                'departure_at_date' => $this->getAttributeMustBeADateErrorMessage('departure date', 'after or equal to', 'today')
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
@@ -840,7 +840,7 @@ class FlightTest extends TestCase
         $response
             ->assertUnprocessable()
             ->assertJsonValidationErrors([
-                'arrival_at_date' => 'The arrival date must be a date after or equal to departure date.'
+                'arrival_at_date' => $this->getAttributeMustBeADateErrorMessage('arrival date', 'after or equal to', 'departure date')
             ]);
 
         $this->assertDatabaseCount('flights', $flightsCountBeforeRequest);
