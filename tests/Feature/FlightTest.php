@@ -130,7 +130,12 @@ class FlightTest extends TestCase
             'airline' => $flight->airline_id
         ]));
 
-        $flights = Flight::where('airline_id', $flight->airline_id)->orderBy('id', 'desc')->cursorPaginate(10);
+        $flights = Flight::where('airline_id', $flight->airline_id)
+        ->orderBy('id', 'desc')
+        ->cursorPaginate(10)
+        ->appends([
+            'airline' => $flight->airline_id
+        ]);
 
         $response
             ->assertSuccessful()
@@ -148,7 +153,10 @@ class FlightTest extends TestCase
 
         $flights = Flight::where('departure_city_id', $flight->departure_city_id)
         ->orderBy('id', 'desc')
-        ->cursorPaginate(10);
+        ->cursorPaginate(10)
+        ->appends([
+            'departure_city' => $flight->departure_city_id
+        ]);
 
         $response
             ->assertSuccessful()
@@ -166,7 +174,10 @@ class FlightTest extends TestCase
 
         $flights = Flight::where('destination_city_id', $flight->destination_city_id)
         ->orderBy('id', 'desc')
-        ->cursorPaginate(10);
+        ->cursorPaginate(10)
+        ->appends([
+            'destination_city' => $flight->destination_city_id
+        ]);
 
         $response
             ->assertSuccessful()
@@ -185,7 +196,9 @@ class FlightTest extends TestCase
         $flights = Flight::whereDate('departure_at', $flight->departure_at)
         ->orderBy('id', 'desc')
         ->cursorPaginate(10)
-        ->appends(['departure_at' => $flight->departure_at->format('Y-m-d')]);
+        ->appends([
+            'departure_at' => $flight->departure_at->format('Y-m-d')
+        ]);
 
         $response
             ->assertSuccessful()
@@ -204,7 +217,9 @@ class FlightTest extends TestCase
         $flights = Flight::whereDate('arrival_at', $flight->arrival_at)
         ->orderBy('id', 'desc')
         ->cursorPaginate(10)
-        ->appends(['arrival_at' => $flight->arrival_at->format('Y-m-d')]);
+        ->appends([
+            'arrival_at' => $flight->arrival_at->format('Y-m-d')
+        ]);
 
         $response
             ->assertSuccessful()
@@ -230,7 +245,14 @@ class FlightTest extends TestCase
         ->where('departure_city_id', $flight->departure_city_id)
         ->where('destination_city_id', $flight->destination_city_id)
         ->orderBy('id', 'desc')
-        ->cursorPaginate(10);
+        ->cursorPaginate(10)
+        ->appends([
+            'airline' => $flight->airline_id,
+            'departure_city' => $flight->departure_city_id,
+            'destination_city' => $flight->destination_city_id,
+            'departure_at' => $flight->departure_at,
+            'arrival_at' => $flight->arrival_at,
+        ]);
 
         $response
             ->assertSuccessful()
