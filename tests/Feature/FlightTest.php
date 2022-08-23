@@ -1687,4 +1687,26 @@ class FlightTest extends TestCase
                 'arrival_at' => $newDepartureAt->format('Y-m-d H:i'),
             ]);
     }
+
+    public function test_request_to_api_destroy_route_soft_deletes_flight(): void
+    {
+        $flight = Flight::first();
+
+        $response = $this->deleteJson(route('api.flights.destroy', $flight));
+
+        $response
+            ->assertSuccessful()
+            ->assertJson([
+                'message' => "Deleted flight 'ID {$flight->id}' successfully."
+            ]);
+
+        $this->assertSoftDeleted($flight);
+    }
+
+    public function test_request_to_api_destroy_route_with_non_existent_flight_returns_not_found(): void
+    {
+        $response = $this->deleteJson(route('api.flights.destroy', 999999999));
+
+        $response->assertNotFound();
+    }
 }
