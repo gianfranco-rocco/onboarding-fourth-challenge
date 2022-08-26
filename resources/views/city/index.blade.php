@@ -48,36 +48,52 @@
         </x-slot:heading>
     </x-table>
 
+    @php
+        $createFormId = 'newCityForm';
+    @endphp
+
     <x-modal 
         id="newCityModal"
         title="New city"
         submitBtnLabel="Save" 
         submitBtnOnclick="saveCity(newCityModal.id)"
-        closeBtnOnclick="clearForm(newCityForm.id)"
+        closeBtnOnclick="clearForm({{ $createFormId }}.id)"
     >
-        <form id="newCityForm" onsubmit="saveCity(newCityModal.id)">
-            <x-form-input-container
-                formId="newCityForm"
-                name="name"
-                label="Name"
-                placeholder="Montevideo"
-            />
+        <form id="{{ $createFormId }}" onsubmit="saveCity(newCityModal.id)">
+            <x-form-input-container :forForm="$createFormId" forInput="name">
+                <x-label :forForm="$createFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$createFormId"
+                    name="name"
+                    placeholder="Montevideo"
+                    class="block w-full"
+                />
+            </x-form-input-container>
         </form>
     </x-modal>
+
+    @php
+        $editFormId = 'editCityForm';
+    @endphp
 
     <x-modal 
         id="editCityModal"
         title="Edit city"
         submitBtnLabel="Update" 
-        closeBtnOnclick="clearForm(editCityForm.id)"
+        closeBtnOnclick="clearForm({{ $editFormId }}.id)"
     >
-        <form id="editCityForm">
-            <x-form-input-container
-                formId="editCityForm"
-                name="name"
-                label="Name"
-                placeholder="Montevideo"
-            />
+        <form id="{{ $editFormId }}">
+            <x-form-input-container :forForm="$editFormId" forInput="name">
+                <x-label :forForm="$editFormId" for="name">Name</x-label>
+
+                <x-input
+                    :forForm="$editFormId"
+                    name="name"
+                    placeholder="Montevideo"
+                    class="block w-full"
+                />
+            </x-form-input-container>
         </form>
     </x-modal>
 
@@ -107,7 +123,7 @@
         const saveCity = (modalId) => {
             const formId = 'newCityForm';
 
-            $.ajax('{{ route("cities.store") }}', {
+            $.ajax('{{ route("api.cities.store") }}', {
                 data: $(`#${formId}`).serialize(),
                 dataType: 'json',
                 headers: {
@@ -128,7 +144,7 @@
                 },
                 error: function (response) {
                     if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        displayFormErrorsFromResponse(response, formId);
+                        displayFormErrorsFromResponse(response.responseJSON.errors, formId);
                     } else {
                         Toast.danger(response.responseJSON.message);
                     }
@@ -137,7 +153,7 @@
         }
 
         const editCity = (cityId) => {
-            const url = '{{ route("cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
+            const url = '{{ route("api.cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
 
             $.ajax(url, {
                 headers: {
@@ -163,7 +179,7 @@
         }
 
         const updateCity = (modalId, cityId) => {
-            const url = '{{ route("cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+            const url = '{{ route("api.cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
             const formId = 'editCityForm';
 
@@ -188,7 +204,7 @@
                 },
                 error: function (response) {
                     if (response.status === HTTP_UNPROCESSABLE_CONTENT) {
-                        displayFormErrorsFromResponse(response, formId);
+                        displayFormErrorsFromResponse(response.responseJSON.errors, formId);
                     } else {
                         Toast.danger(response.responseJSON.message);
                     }
@@ -197,7 +213,7 @@
         }
 
         const deleteCity = (cityId, confirm = false) => {
-            const url = '{{ route("cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+            const url = '{{ route("api.cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
             const modalId = 'deleteCityModal';
 

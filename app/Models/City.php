@@ -21,6 +21,10 @@ class City extends Model
         'name'
     ];
 
+    public $hidden = [
+        'deleted_at'
+    ];
+
     public function incomingFlights(): HasMany
     {
         return $this->hasMany(Flight::class, 'destination_city_id');

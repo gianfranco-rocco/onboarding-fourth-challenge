@@ -7,22 +7,11 @@ use Illuminate\View\Component;
 
 class FormInputContainer extends Component
 {
-    public string $inputId, $name, $label, $inputType, $placeholder, $value;
+    public string $compoundId;
 
-    public function __construct(
-        string $name, 
-        string $label, 
-        string $formId,
-        string $inputType = "text", 
-        string $placeholder = "", 
-        string $value = "",
-    ) {
-        $this->inputId = "{$formId}-{$name}";
-        $this->name = $name;
-        $this->label = $label;
-        $this->inputType = $inputType;
-        $this->placeholder = $placeholder;
-        $this->value = $value;
+    public function __construct(string $forForm, string $forInput)
+    {
+        $this->compoundId = "{$forForm}-{$forInput}";
     }
 
     public function render(): View|\Closure|string

@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Airline;
 use App\Models\City;
+use App\Observers\AirlineObserver;
 use App\Observers\CityObserver;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -30,6 +32,7 @@ class EventServiceProvider extends ServiceProvider
     public function boot()
     {
         City::observe(CityObserver::class);
+        Airline::observe(AirlineObserver::class);
     }
 
     /**

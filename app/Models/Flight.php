@@ -19,8 +19,29 @@ class Flight extends Model
         'destination_city_id'
     ];
 
+    protected $casts = [
+        'departure_at' => 'datetime:Y-m-d H:i:s',
+        'arrival_at' => 'datetime:Y-m-d H:i:s'
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at'
+    ];
+
     public function airline(): BelongsTo
     {
         return $this->belongsTo(Airline::class);
+    }
+
+    public function departureCity(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'departure_city_id');
+    }
+
+    public function destinationCity(): BelongsTo
+    {
+        return $this->belongsTo(City::class, 'destination_city_id');
     }
 }

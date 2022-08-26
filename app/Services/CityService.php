@@ -11,7 +11,7 @@ class CityService
 {
     public function get(): Collection
     {
-        return Cache::rememberForever('cities', fn () => City::all());
+        return Cache::rememberForever('cities', fn () => City::orderBy('name')->get());
     }
 
     public function getCursorPaginated(int $total = 15, int $airline = 0, string $sort = ''): CursorPaginator
