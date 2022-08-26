@@ -123,7 +123,7 @@
         const saveCity = (modalId) => {
             const formId = 'newCityForm';
 
-            $.ajax('{{ route("cities.store") }}', {
+            $.ajax('{{ route("api.cities.store") }}', {
                 data: $(`#${formId}`).serialize(),
                 dataType: 'json',
                 headers: {
@@ -153,7 +153,7 @@
         }
 
         const editCity = (cityId) => {
-            const url = '{{ route("cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
+            const url = '{{ route("api.cities.show", ["city" => "cityId"]) }}'.replace('cityId', cityId);
 
             $.ajax(url, {
                 headers: {
@@ -179,7 +179,7 @@
         }
 
         const updateCity = (modalId, cityId) => {
-            const url = '{{ route("cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+            const url = '{{ route("api.cities.update", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
             const formId = 'editCityForm';
 
@@ -213,7 +213,7 @@
         }
 
         const deleteCity = (cityId, confirm = false) => {
-            const url = '{{ route("cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
+            const url = '{{ route("api.cities.destroy", ["city" => "cityId"]) }}'.replace("cityId", cityId);
 
             const modalId = 'deleteCityModal';
 

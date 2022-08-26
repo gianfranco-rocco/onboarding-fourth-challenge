@@ -127,10 +127,14 @@ class CityRoutesTest extends TestCase
     {
         $airline = Airline::factory()->create();
 
-        $airline->cities()->attach(City::skip(0)->take(2)->get()->pluck('id'));
+        $cities = City::skip(0)->take(2)->get();
+
+        $airline->cities()->attach($cities);
 
         Flight::factory()
         ->for($airline)
+        ->for($cities[0], 'departureCity')
+        ->for($cities[1], 'destinationCity')
         ->create();
 
         $response = $this->get(route('cities.index', [
