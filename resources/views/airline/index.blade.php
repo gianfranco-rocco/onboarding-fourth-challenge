@@ -205,7 +205,7 @@
 
             clearErrorsFromForm(formId);
 
-            fetch('{{ route("airlines.store") }}',{
+            fetch('{{ route("api.airlines.store") }}',{
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +243,7 @@
         }
 
         const editAirline = (airlineId) => {
-            const url = '{{ route("airlines.show", ["airline" => "airlineId"]) }}'.replace('airlineId', airlineId);
+            const url = '{{ route("api.airlines.show", ["airline" => "airlineId"]) }}'.replace('airlineId', airlineId);
 
             fetch(url,{
                 method: 'GET',
@@ -294,7 +294,7 @@
         }
 
         const updateAirline = (modalId, airlineId) => {
-            const url = '{{ route("airlines.update", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId);
+            const url = '{{ route("api.airlines.update", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId);
 
             const formId = 'editAirlineForm';
 
@@ -338,7 +338,7 @@
         }
 
         const deleteAirline = (airlineId, confirm = false) => {
-            const url = '{{ route("airlines.destroy", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId);
+            const url = '{{ route("api.airlines.destroy", ["airline" => "airlineId"]) }}'.replace("airlineId", airlineId);
 
             const modalId = 'deleteAirlineModal';
 
